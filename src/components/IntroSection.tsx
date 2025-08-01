@@ -1,18 +1,24 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { HelpCircle, ExternalLink } from 'lucide-react';
+import { HelpCircle, ExternalLink, Stethoscope } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export const IntroSection = () => {
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 border-2">
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">
+            <div className="flex items-center gap-2 mb-3">
+              <Stethoscope className="h-6 w-6 text-medical-primary" />
+              <h2 className="text-2xl font-bold text-medical-primary">
+                Diagnosis & Service Code Suggestion Tool
+              </h2>
+            </div>
+            <p className="text-lg text-muted-foreground mb-4">
               Enter SOAP notes to get code suggestions
-            </h2>
-            <div className="flex gap-4 text-sm">
+            </p>
+            <div className="flex gap-6 text-sm">
               <a 
                 href="https://www.who.int/standards/classifications/classification-of-diseases" 
                 target="_blank" 
@@ -46,15 +52,16 @@ export const IntroSection = () => {
                 SOAP Format Help
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
-              <div className="space-y-3">
-                <h4 className="font-semibold">SOAP Note Format Example:</h4>
-                <div className="text-sm space-y-2">
-                  <p><strong>Subjective:</strong> Patient reports nausea and stomach pain for 2 days</p>
-                  <p><strong>Objective:</strong> Temperature 37.8°C, abdominal tenderness</p>
-                  <p><strong>Assessment:</strong> Probable gastroenteritis</p>
-                  <p><strong>Plan:</strong> Oral rehydration, follow-up in 3 days</p>
+            <PopoverContent className="w-96">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-medical-primary">SOAP Note Format Example:</h4>
+                <div className="text-sm space-y-3 bg-muted p-3 rounded-md">
+                  <p><strong className="text-medical-primary">Subjective:</strong> Patient reports nausea and stomach pain for 2 days</p>
+                  <p><strong className="text-medical-primary">Objective:</strong> Temperature 37.8°C, abdominal tenderness</p>
+                  <p><strong className="text-medical-primary">Assessment:</strong> Probable gastroenteritis</p>
+                  <p><strong className="text-medical-primary">Plan:</strong> Oral rehydration, follow-up in 3 days</p>
                 </div>
+                <p className="text-xs text-muted-foreground">Enter detailed notes in each section for better code suggestions</p>
               </div>
             </PopoverContent>
           </Popover>

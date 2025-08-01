@@ -1,7 +1,7 @@
 import { CodeSuggestion } from '../store/slices/medicalSlice';
 
 // Mock data for Norwegian medical codes
-const mockDiagnosisCodes = [
+export const mockDiagnosisCodes = [
   { code: 'A09', description: 'Gastroenteritis', system: 'ICD-10' as const },
   { code: 'J06', description: 'Acute upper respiratory infection', system: 'ICD-10' as const },
   { code: 'K59.1', description: 'Diarrhea', system: 'ICD-10' as const },
@@ -10,18 +10,36 @@ const mockDiagnosisCodes = [
   { code: 'R74', description: 'Upper respiratory infection', system: 'ICPC-2' as const },
 ];
 
-const mockServiceCodes = [
+export const mockServiceCodes = [
   { code: '2ae', description: 'GP Consultation', system: 'HELFO' as const },
   { code: '1ae', description: 'Emergency visit', system: 'HELFO' as const },
   { code: '2ak', description: 'Extended consultation', system: 'HELFO' as const },
   { code: '1be', description: 'Home visit', system: 'Tjenestekoder' as const },
+  { code: '2cd', description: 'Follow-up appointment', system: 'HELFO' as const },
+  { code: '2dd', description: 'Comprehensive assessment', system: 'HELFO' as const }
 ];
 
-export const generateCodeSuggestions = async (soapNote: string): Promise<CodeSuggestion[]> => {
+// Default confidence levels for certain keywords in the note
+const defaultServiceConfidence = {
+  appointment: 65,
+  consultation: 85,
+  assessment: 75,
+  examination: 80,
+  emergency: 90,
+  urgent: 90,
+  visit: 70,
+  checkup: 65
+};
+
+export const generateCodeSuggestions = async (soapNote: string): Promise<{
+  diagnosisCodes: CodeSuggestion[];
+  serviceCodes: CodeSuggestion[];
+}> => {
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   
-  const suggestions: CodeSuggestion[] = [];
+  const diagnosisSuggestions: CodeSuggestion[] = [];
+  const serviceSuggestions: CodeSuggestion[] = [];
   const lowerText = soapNote.toLowerCase();
   
   // Simple keyword matching for demo purposes
@@ -40,7 +58,7 @@ export const generateCodeSuggestions = async (soapNote: string): Promise<CodeSug
     }
     
     if (confidence > 0) {
-      suggestions.push({
+      diagnosisSuggestions.push({
         id: `diag-${index}`,
         code: code.code,
         description: code.description,
@@ -54,16 +72,55 @@ export const generateCodeSuggestions = async (soapNote: string): Promise<CodeSug
   // Add service code suggestions
   mockServiceCodes.forEach((code, index) => {
     let confidence = 0;
-    if (lowerText.includes('consultation') || lowerText.includes('examination')) {
-      if (code.code === '2ae') confidence = 95;
-      if (code.code === '2ak') confidence = 70;
-    }
-    if (lowerText.includes('emergency') || lowerText.includes('urgent')) {
-      if (code.code === '1ae') confidence = 88;
-    }
+    console.log(`Evaluating service code: ${code.code} - ${code.description}`, defaultServiceConfidence);
     
+    // Use base confidence from keywords found in text
+    Object.entries(defaultServiceConfidence).forEach(([keyword, baseConfidence]) => {
+      if (lowerText.includes(keyword)) {
+        // Set initial confidence based on keyword match
+        confidence = Math.max(confidence, baseConfidence);
+        
+        // Adjust confidence based on specific code matches
+        switch (code.code) {
+          case '2ae': // GP Consultation
+            if (keyword === 'consultation' || keyword === 'appointment') {
+              confidence = Math.max(confidence, 95);
+            }
+            break;
+          case '2ak': // Extended consultation
+            if (keyword === 'assessment' || keyword === 'examination') {
+              confidence = Math.max(confidence, 85);
+            }
+            break;
+          case '1ae': // Emergency visit
+            if (keyword === 'emergency' || keyword === 'urgent') {
+              confidence = Math.max(confidence, 90);
+            }
+            break;
+          case '1be': // Home visit
+            if (keyword === 'visit' && lowerText.includes('home')) {
+              confidence = Math.max(confidence, 88);
+            }
+            break;
+          case '2cd': // Follow-up appointment
+            if (lowerText.includes('follow') && lowerText.includes('up')) {
+              confidence = Math.max(confidence, 85);
+            }
+            break;
+          case '2dd': // Comprehensive assessment
+            if (lowerText.includes('comprehensive') ||
+                (lowerText.includes('full') && keyword === 'assessment')) {
+              confidence = Math.max(confidence, 88);
+            }
+            break;
+        }
+      }
+    });
+
+    console.log('Service Suggestions:', serviceSuggestions);
+
     if (confidence > 0) {
-      suggestions.push({
+      serviceSuggestions.push({
         id: `service-${index}`,
         code: code.code,
         description: code.description,
@@ -74,7 +131,10 @@ export const generateCodeSuggestions = async (soapNote: string): Promise<CodeSug
     }
   });
 
-  return suggestions.sort((a, b) => b.confidence - a.confidence);
+  return {
+    diagnosisCodes: diagnosisSuggestions.sort((a, b) => b.confidence - a.confidence),
+    serviceCodes: serviceSuggestions.sort((a, b) => b.confidence - a.confidence)
+  };
 };
 
 export const validateCode = async (code: string): Promise<{ isValid: boolean; message: string; code?: CodeSuggestion }> => {

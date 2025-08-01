@@ -2,33 +2,59 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { FileText, Lightbulb } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { FileText, Lightbulb, AlertCircle } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { updateSOAPField, setSuggestedCodes, setLoading } from '../store/slices/medicalSlice';
+import {
+  updateSOAPField,
+  updateSOAPCharCount,
+  setSuggestedCodes,
+  setSuggestedServiceCodes,
+  setLoading
+} from '../store/slices/medicalSlice';
 import { generateCodeSuggestions } from '../services/medicalCodes';
 
 export const SOAPInput = () => {
   const dispatch = useAppDispatch();
   const { soapNote, isLoading } = useAppSelector((state) => state.medical);
 
-  const handleFieldChange = (field: keyof typeof soapNote, value: string) => {
-    dispatch(updateSOAPField({ field, value }));
+  const MAX_CHARS = 2000;
+
+  const handleFieldChange = async (field: 'subjective' | 'objective' | 'assessment' | 'plan', value: string) => {
+    if (value.length <= MAX_CHARS) {
+      dispatch(updateSOAPField({ field, value }));
+      dispatch(updateSOAPCharCount({ field, count: value.length }));
+      
+      // Live suggestions after 100 characters of total content
+      const fullNote = field === 'subjective' ? value + soapNote.objective + soapNote.assessment + soapNote.plan :
+                      field === 'objective' ? soapNote.subjective + value + soapNote.assessment + soapNote.plan :
+                      field === 'assessment' ? soapNote.subjective + soapNote.objective + value + soapNote.plan :
+                      soapNote.subjective + soapNote.objective + soapNote.assessment + value;
+      
+      if (fullNote.length >= 100 && !isLoading) {
+        await handleSuggestCodes(undefined, false);
+      }
+    }
   };
 
-  const handleSuggestCodes = async () => {
-    dispatch(setLoading(true));
+  const handleSuggestCodes = async (e?: React.MouseEvent<HTMLButtonElement>, showLoading = true) => {
+    if (showLoading) {
+      dispatch(setLoading(true));
+    }
     try {
       const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`;
-      const suggestions = await generateCodeSuggestions(fullNote);
-      dispatch(setSuggestedCodes(suggestions));
+      const { diagnosisCodes, serviceCodes } = await generateCodeSuggestions(fullNote);
+      dispatch(setSuggestedCodes(diagnosisCodes));
+      dispatch(setSuggestedServiceCodes(serviceCodes));
     } catch (error) {
       console.error('Error generating suggestions:', error);
     } finally {
       dispatch(setLoading(false));
     }
   };
+const isSOAPEmpty = !soapNote.subjective && !soapNote.objective && !soapNote.assessment && !soapNote.plan;
+const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`.trim();
 
-  const isSOAPEmpty = !soapNote.subjective && !soapNote.objective && !soapNote.assessment && !soapNote.plan;
 
   return (
     <Card className="mb-6 border-medical-primary/20 shadow-lg">
@@ -50,13 +76,20 @@ export const SOAPInput = () => {
               </div>
               <Label htmlFor="subjective" className="text-base font-medium">Subjective</Label>
             </div>
-            <Textarea
-              id="subjective"
-              placeholder="Patient's chief complaint, symptoms, and history of present illness..."
-              value={soapNote.subjective}
-              onChange={(e) => handleFieldChange('subjective', e.target.value)}
-              className="min-h-[120px] border-medical-primary/20 focus:border-medical-primary/40 rounded-lg"
-            />
+            <div className="space-y-2">
+              <Textarea
+                id="subjective"
+                placeholder="Patient's chief complaint, symptoms, and reason for consultation..."
+                value={soapNote.subjective}
+                onChange={(e) => handleFieldChange('subjective', e.target.value)}
+                className="min-h-[120px] border-medical-primary/20 focus:border-medical-primary/40 rounded-lg resize-none transition-all duration-200"
+                maxLength={MAX_CHARS}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{soapNote.subjective.length} / {MAX_CHARS}</span>
+                <Progress value={(soapNote.subjective.length / MAX_CHARS) * 100} className="w-32 h-1" />
+              </div>
+            </div>
           </div>
           
           <div className="space-y-3">
@@ -66,13 +99,20 @@ export const SOAPInput = () => {
               </div>
               <Label htmlFor="objective" className="text-base font-medium">Objective</Label>
             </div>
-            <Textarea
-              id="objective"
-              placeholder="Physical examination findings, vital signs, laboratory results..."
-              value={soapNote.objective}
-              onChange={(e) => handleFieldChange('objective', e.target.value)}
-              className="min-h-[120px] border-medical-secondary/20 focus:border-medical-secondary/40 rounded-lg"
-            />
+            <div className="space-y-2">
+              <Textarea
+                id="objective"
+                placeholder="Physical examination findings, vital signs, and assessment details..."
+                value={soapNote.objective}
+                onChange={(e) => handleFieldChange('objective', e.target.value)}
+                className="min-h-[120px] border-medical-secondary/20 focus:border-medical-secondary/40 rounded-lg resize-none transition-all duration-200"
+                maxLength={MAX_CHARS}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{soapNote.objective.length} / {MAX_CHARS}</span>
+                <Progress value={(soapNote.objective.length / MAX_CHARS) * 100} className="w-32 h-1" />
+              </div>
+            </div>
           </div>
           
           <div className="space-y-3">
@@ -82,13 +122,20 @@ export const SOAPInput = () => {
               </div>
               <Label htmlFor="assessment" className="text-base font-medium">Assessment</Label>
             </div>
-            <Textarea
-              id="assessment"
-              placeholder="Clinical impression, differential diagnosis, clinical reasoning..."
-              value={soapNote.assessment}
-              onChange={(e) => handleFieldChange('assessment', e.target.value)}
-              className="min-h-[120px] border-medical-accent/20 focus:border-medical-accent/40 rounded-lg"
-            />
+            <div className="space-y-2">
+              <Textarea
+                id="assessment"
+                placeholder="Clinical assessment, differential diagnosis, and visit type (consultation/emergency)..."
+                value={soapNote.assessment}
+                onChange={(e) => handleFieldChange('assessment', e.target.value)}
+                className="min-h-[120px] border-medical-accent/20 focus:border-medical-accent/40 rounded-lg resize-none transition-all duration-200"
+                maxLength={MAX_CHARS}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{soapNote.assessment.length} / {MAX_CHARS}</span>
+                <Progress value={(soapNote.assessment.length / MAX_CHARS) * 100} className="w-32 h-1" />
+              </div>
+            </div>
           </div>
           
           <div className="space-y-3">
@@ -98,19 +145,31 @@ export const SOAPInput = () => {
               </div>
               <Label htmlFor="plan" className="text-base font-medium">Plan</Label>
             </div>
-            <Textarea
-              id="plan"
-              placeholder="Treatment plan, medications, procedures, follow-up instructions..."
-              value={soapNote.plan}
-              onChange={(e) => handleFieldChange('plan', e.target.value)}
-              className="min-h-[120px] border-medical-warning/20 focus:border-medical-warning/40 rounded-lg"
-            />
+            <div className="space-y-2">
+              <Textarea
+                id="plan"
+                placeholder="Treatment plan, medications, procedures, and follow-up appointment details..."
+                value={soapNote.plan}
+                onChange={(e) => handleFieldChange('plan', e.target.value)}
+                className="min-h-[120px] border-medical-warning/20 focus:border-medical-warning/40 rounded-lg resize-none transition-all duration-200"
+                maxLength={MAX_CHARS}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{soapNote.plan.length} / {MAX_CHARS}</span>
+                <Progress value={(soapNote.plan.length / MAX_CHARS) * 100} className="w-32 h-1" />
+              </div>
+            </div>
           </div>
         </div>
         
-        <div className="flex justify-center pt-4 border-t border-border/50">
-          <Button 
-            onClick={handleSuggestCodes}
+        <div className="flex flex-col items-center gap-2 pt-4 border-t border-border/50">
+          {fullNote.length > 0 && fullNote.length < 100 && (
+            <p className="text-sm text-muted-foreground">
+              Add {100 - fullNote.length} more characters for live suggestions
+            </p>
+          )}
+          <Button
+            onClick={(e) => handleSuggestCodes(e, true)}
             disabled={isLoading || isSOAPEmpty}
             className="bg-gradient-to-r from-medical-primary to-medical-secondary hover:from-medical-primary/90 hover:to-medical-secondary/90 text-white shadow-lg"
             size="lg"

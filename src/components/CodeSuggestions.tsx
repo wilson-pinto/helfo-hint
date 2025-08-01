@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Check, X, HelpCircle, Activity, Stethoscope } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Lightbulb, Check, X, HelpCircle, Activity, Stethoscope, PieChart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { acceptCode, rejectCode } from '../store/slices/medicalSlice';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -29,7 +31,12 @@ export const CodeSuggestions = () => {
   }
 
   return (
-    <Card className="mb-6 border-medical-warning/20 shadow-lg">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card className="mb-6 border-medical-warning/20 shadow-lg">
       <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-warning/5 border-b border-medical-primary/10">
         <CardTitle className="flex items-center gap-2 text-medical-primary">
           <Lightbulb className="h-5 w-5" />
@@ -41,15 +48,51 @@ export const CodeSuggestions = () => {
       </CardHeader>
       <CardContent className="p-6">
         <div className="border border-medical-primary/20 rounded-lg p-4 bg-gradient-to-br from-medical-primary/5 to-transparent">
-          <h3 className="font-semibold text-xl mb-4 flex items-center gap-3 text-medical-primary">
-            <div className="w-8 h-8 rounded-full bg-medical-primary/10 flex items-center justify-center">
-              <Stethoscope className="h-4 w-4" />
-            </div>
-            Diagnosis Codes (ICD-10 / ICPC-2)
-          </h3>
-          <div className="space-y-3">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-xl flex items-center gap-3 text-medical-primary">
+              <div className="w-8 h-8 rounded-full bg-medical-primary/10 flex items-center justify-center">
+                <Stethoscope className="h-4 w-4" />
+              </div>
+              Diagnosis Codes (ICD-10 / ICPC-2)
+            </h3>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-medical-primary">
+                    <PieChart className="h-4 w-4 mr-1" />
+                    Confidence Levels
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-2 p-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-confidence-high" />
+                      <span>High (85%+)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-confidence-medium" />
+                      <span>Medium (70-84%)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-confidence-low" />
+                      <span>Low (&lt;70%)</span>
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <AnimatePresence mode="popLayout">
+            <div className="space-y-3">
             {diagnosisCodes.map((code) => (
-              <div key={code.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <motion.div
+                key={code.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/5 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <Badge variant="outline" className="font-mono">
                     {code.code}
@@ -58,19 +101,32 @@ export const CodeSuggestions = () => {
                     <p className="font-medium">{code.description}</p>
                     <p className="text-sm text-muted-foreground">{code.system}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${getConfidenceColor(code.confidence)}`} />
-                    <span className="text-sm font-medium">{code.confidence}%</span>
-                    <span className="text-xs text-muted-foreground">
-                      {getConfidenceText(code.confidence)}
-                    </span>
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-2 cursor-help">
+                          <div className={`w-3 h-3 rounded-full ${getConfidenceColor(code.confidence)}`} />
+                          <span className="text-sm font-medium">{code.confidence}%</span>
+                          <span className="text-xs text-muted-foreground">
+                            {getConfidenceText(code.confidence)}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">
+                          {code.confidence >= 85 ? 'High confidence in this suggestion based on clear symptoms and clinical patterns' :
+                           code.confidence >= 70 ? 'Moderate confidence based on partial symptom match' :
+                           'Lower confidence suggestion, may need review'}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
                     variant="default"
-                    onClick={() => dispatch(acceptCode(code.id))}
+                    onClick={() => dispatch(acceptCode({ id: code.id, type: 'diagnosis' }))}
                     className="bg-medical-success hover:bg-medical-success/90"
                   >
                     <Check className="h-4 w-4 mr-1" />
@@ -79,7 +135,7 @@ export const CodeSuggestions = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => dispatch(rejectCode(code.id))}
+                    onClick={() => dispatch(rejectCode({ id: code.id, type: 'diagnosis' }))}
                   >
                     <X className="h-4 w-4 mr-1" />
                     Reject
@@ -92,20 +148,29 @@ export const CodeSuggestions = () => {
                     </PopoverTrigger>
                     <PopoverContent>
                       <div className="space-y-2">
-                        <h4 className="font-semibold">Why this suggestion?</h4>
+                        <h4 className="font-semibold text-medical-primary">Why this suggestion?</h4>
                         <p className="text-sm">
-                          This code was suggested based on keywords and symptoms mentioned in your SOAP note.
-                          Confidence is based on relevance to the clinical presentation.
+                          Suggested based on:
+                        </p>
+                        <ul className="text-sm space-y-1 list-disc pl-4">
+                          <li>Keywords and symptoms in SOAP note</li>
+                          <li>Clinical presentation patterns</li>
+                          <li>Common diagnostic associations</li>
+                        </ul>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {code.confidence}% confidence based on match strength
                         </p>
                       </div>
                     </PopoverContent>
                   </Popover>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+            </div>
+           </AnimatePresence>
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </motion.div>
   );
 };
