@@ -1,43 +1,27 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { AlertTriangle, Github, MessageSquare, Book, Scale, ExternalLink } from 'lucide-react';
+import { AlertTriangle, Github, MessageSquare, Book, Scale, ExternalLink, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import Logo from './Logo';
 
 export const Footer = () => {
   return (
     <motion.div
+      className='container mx-auto px-4'
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mt-8">
+      <Card className="mt-8 bg-transparent text-gray-400">
         <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-amber-600">
-            <AlertTriangle className="h-5 w-5" />
-            <span className="text-sm font-medium">
-              Experimental tool for testing only. Not for clinical use.
-            </span>
+          <div className="flex my-8">
+            <div className='w-56'>
+              <Logo />
+            </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" asChild>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-                <Github className="h-4 w-4 mr-2" />
-                GitHub
-              </a>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <a href="#feedback" onClick={(e) => e.preventDefault()}>
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Feedback
-              </a>
-            </Button>
-          </div>
-        </div>
-        
-          <div className="grid gap-6 mt-6">
+          <div className="grid gap-6">
             <div className="flex flex-col gap-2">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Book className="h-4 w-4" />
@@ -81,7 +65,7 @@ export const Footer = () => {
 
             <Separator />
 
-            <div className="space-y-3 text-sm text-muted-foreground">
+            <div className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
                 <Scale className="h-4 w-4 mt-0.5" />
                 <div>
@@ -101,24 +85,11 @@ export const Footer = () => {
 
             <Separator />
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                © 2025 HELFO-HINT Project. Open source software.
-              </p>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" asChild>
-                  <a href="https://github.com/your-repo" target="_blank" rel="noopener noreferrer">
-                    <Github className="h-4 w-4 mr-2" />
-                    Source Code
-                  </a>
-                </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="https://github.com/your-repo/issues/new" target="_blank" rel="noopener noreferrer">
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Report Issue
-                  </a>
-                </Button>
-              </div>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+             <p>© 2025 HELFO-HINT Project.</p>
+                <p className="flex items-center gap-1 mt-1">
+                  Made with <Heart className="h-3 w-3 text-medical-error dark:text-medical-error-foreground fill-current animate-pulse" /> by AI Alchemists
+                </p>
             </div>
           </div>
         </CardContent>

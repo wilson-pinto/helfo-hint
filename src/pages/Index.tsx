@@ -33,10 +33,9 @@ const Index = () => {
               </div>
             </div>
           </div>
-          
-          <div className="mt-8 sm:mt-10 lg:mt-12">
-            <Footer />
-          </div>
+        </div>
+        <div className="mt-8 sm:mt-10 lg:mt-12 bg-black/85">
+          <Footer />
         </div>
       </main>
     </div>
