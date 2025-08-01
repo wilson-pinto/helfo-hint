@@ -23,9 +23,11 @@ interface MedicalState {
   acceptedCodes: CodeSuggestion[];
   isLoading: boolean;
   manualCodeInput: string;
+  manualCodes: CodeSuggestion[];
   manualCodeValidation: {
     isValid?: boolean;
     message?: string;
+    code?: CodeSuggestion;
   } | null;
 }
 
@@ -40,6 +42,7 @@ const initialState: MedicalState = {
   acceptedCodes: [],
   isLoading: false,
   manualCodeInput: '',
+  manualCodes: [],
   manualCodeValidation: null,
 };
 
@@ -71,11 +74,19 @@ const medicalSlice = createSlice({
     setManualCodeInput: (state, action: PayloadAction<string>) => {
       state.manualCodeInput = action.payload;
     },
-    setManualCodeValidation: (state, action: PayloadAction<{ isValid: boolean; message: string }>) => {
+    setManualCodeValidation: (state, action: PayloadAction<{ isValid: boolean; message: string; code?: CodeSuggestion }>) => {
       state.manualCodeValidation = action.payload;
     },
     clearManualCodeValidation: (state) => {
       state.manualCodeValidation = null;
+    },
+    addManualCode: (state, action: PayloadAction<CodeSuggestion>) => {
+      if (!state.manualCodes.find(c => c.id === action.payload.id)) {
+        state.manualCodes.push(action.payload);
+      }
+    },
+    removeManualCode: (state, action: PayloadAction<string>) => {
+      state.manualCodes = state.manualCodes.filter(c => c.id !== action.payload);
     },
   },
 });
@@ -90,6 +101,8 @@ export const {
   setManualCodeInput,
   setManualCodeValidation,
   clearManualCodeValidation,
+  addManualCode,
+  removeManualCode,
 } = medicalSlice.actions;
 
 export default medicalSlice.reducer;

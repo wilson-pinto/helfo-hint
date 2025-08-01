@@ -77,7 +77,7 @@ export const generateCodeSuggestions = async (soapNote: string): Promise<CodeSug
   return suggestions.sort((a, b) => b.confidence - a.confidence);
 };
 
-export const validateCode = async (code: string): Promise<{ isValid: boolean; message: string }> => {
+export const validateCode = async (code: string): Promise<{ isValid: boolean; message: string; code?: CodeSuggestion }> => {
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 500));
   
@@ -85,9 +85,20 @@ export const validateCode = async (code: string): Promise<{ isValid: boolean; me
   const foundCode = allCodes.find(c => c.code.toLowerCase() === code.toLowerCase());
   
   if (foundCode) {
+    const codeType = mockServiceCodes.some(sc => sc.code === foundCode.code) ? 'service' : 'diagnosis';
+    const validatedCode: CodeSuggestion = {
+      id: `manual-${Date.now()}`,
+      code: foundCode.code,
+      description: foundCode.description,
+      type: codeType,
+      system: foundCode.system,
+      confidence: 100,
+    };
+    
     return {
       isValid: true,
       message: `Valid ${foundCode.system} code: ${foundCode.description}`,
+      code: validatedCode,
     };
   } else {
     return {

@@ -30,18 +30,23 @@ export const CodeSuggestions = () => {
   }
 
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <Card className="mb-6 border-medical-warning/20 shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-medical-warning/5 to-medical-primary/5 border-b border-medical-warning/10">
+        <CardTitle className="flex items-center gap-2 text-medical-warning">
           <Lightbulb className="h-5 w-5" />
-          Suggested Codes
+          AI-Generated Code Suggestions
         </CardTitle>
+        <p className="text-sm text-muted-foreground mt-1">
+          Codes automatically suggested based on your SOAP note content
+        </p>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8 p-6">
         {diagnosisCodes.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-              <Stethoscope className="h-4 w-4" />
+          <div className="border border-medical-primary/20 rounded-lg p-4 bg-gradient-to-br from-medical-primary/5 to-transparent">
+            <h3 className="font-semibold text-xl mb-4 flex items-center gap-3 text-medical-primary">
+              <div className="w-8 h-8 rounded-full bg-medical-primary/10 flex items-center justify-center">
+                <Stethoscope className="h-4 w-4" />
+              </div>
               Diagnosis Codes (ICD-10 / ICPC-2)
             </h3>
             <div className="space-y-3">
@@ -105,9 +110,11 @@ export const CodeSuggestions = () => {
         )}
 
         {serviceCodes.length > 0 && (
-          <div>
-            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-              <Activity className="h-4 w-4" />
+          <div className="border border-medical-secondary/20 rounded-lg p-4 bg-gradient-to-br from-medical-secondary/5 to-transparent">
+            <h3 className="font-semibold text-xl mb-4 flex items-center gap-3 text-medical-secondary">
+              <div className="w-8 h-8 rounded-full bg-medical-secondary/10 flex items-center justify-center">
+                <Activity className="h-4 w-4" />
+              </div>
               Service Codes (HELFO / Tjenestekoder)
             </h3>
             <div className="space-y-3">
