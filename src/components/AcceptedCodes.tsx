@@ -139,7 +139,7 @@ export const AcceptedCodes = () => {
                       className={`font-mono ${
                         code.type === 'diagnosis'
                           ? 'border-medical-primary text-medical-primary'
-                          : 'border-medical-secondary text-medical-secondary'
+                          : 'border-medical-secondary text-medical-primary'
                       }`}
                     >
                       {code.code}

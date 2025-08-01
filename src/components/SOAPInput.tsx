@@ -25,13 +25,13 @@ export const SOAPInput = () => {
     if (value.length <= MAX_CHARS) {
       dispatch(updateSOAPField({ field, value }));
       dispatch(updateSOAPCharCount({ field, count: value.length }));
-      
+
       // Live suggestions after 100 characters of total content
       const fullNote = field === 'subjective' ? value + soapNote.objective + soapNote.assessment + soapNote.plan :
-                      field === 'objective' ? soapNote.subjective + value + soapNote.assessment + soapNote.plan :
-                      field === 'assessment' ? soapNote.subjective + soapNote.objective + value + soapNote.plan :
-                      soapNote.subjective + soapNote.objective + soapNote.assessment + value;
-      
+        field === 'objective' ? soapNote.subjective + value + soapNote.assessment + soapNote.plan :
+          field === 'assessment' ? soapNote.subjective + soapNote.objective + value + soapNote.plan :
+            soapNote.subjective + soapNote.objective + soapNote.assessment + value;
+
       if (fullNote.length >= 100 && !isLoading) {
         await handleSuggestCodes(undefined, false);
       }
@@ -53,19 +53,19 @@ export const SOAPInput = () => {
       dispatch(setLoading(false));
     }
   };
-const isSOAPEmpty = !soapNote.subjective && !soapNote.objective && !soapNote.assessment && !soapNote.plan;
-const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`.trim();
+  const isSOAPEmpty = !soapNote.subjective && !soapNote.objective && !soapNote.assessment && !soapNote.plan;
+  const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`.trim();
 
 
   return (
     <Card className="mb-6 bg-medical-surface">
-      <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-secondary/5">
+      <CardHeader className="bg-medical-primary/10 rounded-t-lg">
         <CardTitle className="flex items-center gap-2 text-medical-primary">
           <FileText className="h-5 w-5" />
-          SOAP Note Documentation
+          SOAP Note
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1">
-          Document patient information to generate relevant medical codes
+          Enter patient information to generate relevant medical codes
         </p>
       </CardHeader>
       <CardContent className="space-y-6 p-6">
@@ -92,11 +92,11 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
               </div>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full flex items-center justify-center bg-medical-secondary/10">
-                <span className="text-sm font-semibold text-medical-secondary">O</span>
+                <span className="text-sm font-semibold text-medical-primary">O</span>
               </div>
               <Label htmlFor="objective" className="text-base font-medium">Objective</Label>
             </div>
@@ -115,7 +115,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
               </div>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full flex items-center justify-center bg-medical-info/10">
@@ -138,7 +138,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
               </div>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full flex items-center justify-center bg-medical-warning/10">
@@ -162,7 +162,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
             </div>
           </div>
         </div>
-        
+
         <div className="flex flex-col items-center gap-2 pt-4 border-t border-border/50">
           {fullNote.length > 0 && fullNote.length < 100 && (
             <p className="text-sm text-muted-foreground">

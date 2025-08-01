@@ -7,7 +7,7 @@ export const IntroSection = () => {
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between">
           <div>
             <p className="text-lg text-muted-foreground mb-4">
               Enter SOAP notes to get code suggestions

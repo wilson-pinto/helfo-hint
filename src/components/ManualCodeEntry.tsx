@@ -121,8 +121,8 @@ export const ManualCodeEntry = () => {
       transition={{ duration: 0.3 }}
     >
       <Card className="mb-6 bg-medical-surface">
-        <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-warning/5">
-          <CardTitle className="flex items-center gap-2 text-medical-primary">
+      <CardHeader className="bg-medical-primary/10 rounded-t-lg">
+        <CardTitle className="flex items-center gap-2 text-medical-primary">
             <Search className="h-5 w-5" />
             Manual Code Entry
           </CardTitle>

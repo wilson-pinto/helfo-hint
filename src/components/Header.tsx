@@ -7,7 +7,7 @@ export const Header = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-3">
             <Stethoscope className="h-6 w-6 sm:h-8 sm:w-8" />
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold">
+            <h1 className="text-xl font-semibold">
               Diagnosis & Service Code Suggestion Tool
             </h1>
           </div>
