@@ -61,6 +61,18 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				medical: {
+					primary: 'hsl(var(--medical-primary))',
+					success: 'hsl(var(--medical-success))',
+					warning: 'hsl(var(--medical-warning))',
+					error: 'hsl(var(--medical-error))',
+					info: 'hsl(var(--medical-info))'
+				},
+				confidence: {
+					high: 'hsl(var(--confidence-high))',
+					medium: 'hsl(var(--confidence-medium))',
+					low: 'hsl(var(--confidence-low))'
 				}
 			},
 			borderRadius: {
