@@ -1,73 +1,60 @@
-# Welcome to your Lovable project
+# Helfo Hint
 
-## Project info
+Helfo Hint is a web application designed to assist with medical coding. It provides suggestions for service codes and allows for manual entry and validation of codes.
 
-**URL**: https://lovable.dev/projects/5422c5a7-68b7-486a-913d-29e021b8408d
+## Technologies Used
 
-## How can I edit this code?
+This project is built with the following technologies:
 
-There are several ways of editing your application.
+- **Vite**: A next-generation frontend tooling that provides a faster and leaner development experience.
+- **React**: A JavaScript library for building user interfaces.
+- **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript.
+- **Tailwind CSS**: A utility-first CSS framework for rapid UI development.
+- **shadcn/ui**: A collection of re-usable components built using Radix UI and Tailwind CSS.
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5422c5a7-68b7-486a-913d-29e021b8408d) and start prompting.
+To get a local copy up and running, follow these simple steps.
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+You need to have [Bun](https://bun.sh/) installed on your machine.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1.  **Clone the repo**
+    ```sh
+    git clone <YOUR_GIT_URL>
+    ```
+2.  **Navigate to the project directory**
+    ```sh
+    cd helfo-hint
+    ```
+3.  **Install dependencies**
+    ```sh
+    bun install
+    ```
 
-Follow these steps:
+### Running the Application
+
+To start the development server, run the following command:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+bun run dev
 ```
 
-**Edit a file directly in GitHub**
+This will start the application in development mode, with hot-reloading enabled. Open [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal) to view it in the browser.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Building for Production
 
-**Use GitHub Codespaces**
+To create a production build, use:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+bun run build
+```
 
-## What technologies are used for this project?
+This command bundles the application for production and outputs the static files to the `dist` directory.
 
-This project is built with:
+## Deployment
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5422c5a7-68b7-486a-913d-29e021b8408d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project can be deployed using various platforms that support Vite-based applications. 
