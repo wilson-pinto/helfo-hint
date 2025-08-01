@@ -5,16 +5,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 export const IntroSection = () => {
   return (
-    <Card className="mb-6 border-2">
+    <Card className="mb-6">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Stethoscope className="h-6 w-6 text-medical-primary" />
-              <h2 className="text-2xl font-bold text-medical-primary">
-                Diagnosis & Service Code Suggestion Tool
-              </h2>
-            </div>
             <p className="text-lg text-muted-foreground mb-4">
               Enter SOAP notes to get code suggestions
             </p>

@@ -36,10 +36,10 @@ export const CodeSuggestions = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mb-6 border-medical-warning/20 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-warning/5 border-b border-medical-primary/10">
-        <CardTitle className="flex items-center gap-2 text-medical-primary">
-          <Lightbulb className="h-5 w-5" />
+      <Card className="mb-6 border-medical-warning/20">
+       <CardHeader className="bg-medical-secondary/5">
+          <CardTitle className="flex items-center gap-2 text-medical-secondary">
+          <Activity className="h-5 w-5" />
           AI-Generated Diagnosis Code Suggestions
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1">
@@ -47,18 +47,12 @@ export const CodeSuggestions = () => {
         </p>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="border border-medical-primary/20 rounded-lg p-4 bg-gradient-to-br from-medical-primary/5 to-transparent">
+        <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-xl flex items-center gap-3 text-medical-primary">
-              <div className="w-8 h-8 rounded-full bg-medical-primary/10 flex items-center justify-center">
-                <Stethoscope className="h-4 w-4" />
-              </div>
-              Diagnosis Codes (ICD-10 / ICPC-2)
-            </h3>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-medical-primary">
+                  <Button variant="ghost" size="sm" className="text-medical-secondary">
                     <PieChart className="h-4 w-4 mr-1" />
                     Confidence Levels
                   </Button>
@@ -91,7 +85,7 @@ export const CodeSuggestions = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/5 transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg hover:bg-medical-neutral transition-colors bg-medical-surface"
               >
                 <div className="flex items-center gap-3">
                   <Badge variant="outline" className="font-mono">

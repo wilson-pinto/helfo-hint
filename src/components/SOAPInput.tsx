@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { FileText, Lightbulb, AlertCircle } from 'lucide-react';
+import { medicalClasses } from '../theme/colors';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import {
   updateSOAPField,
@@ -57,8 +58,8 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
 
 
   return (
-    <Card className="mb-6 border-medical-primary/20 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-secondary/5 border-b border-medical-primary/10">
+    <Card className="mb-6 bg-medical-surface">
+      <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-secondary/5">
         <CardTitle className="flex items-center gap-2 text-medical-primary">
           <FileText className="h-5 w-5" />
           SOAP Note Documentation
@@ -71,7 +72,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-medical-primary/10 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-medical-primary/10">
                 <span className="text-sm font-semibold text-medical-primary">S</span>
               </div>
               <Label htmlFor="subjective" className="text-base font-medium">Subjective</Label>
@@ -82,7 +83,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
                 placeholder="Patient's chief complaint, symptoms, and reason for consultation..."
                 value={soapNote.subjective}
                 onChange={(e) => handleFieldChange('subjective', e.target.value)}
-                className="min-h-[120px] border-medical-primary/20 focus:border-medical-primary/40 rounded-lg resize-none transition-all duration-200"
+                className="min-h-[120px] rounded-lg resize-none transition-all duration-200  focus:bg-white border-gray-200 focus:ring-2 focus:ring-medical-primary"
                 maxLength={MAX_CHARS}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
@@ -94,7 +95,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
           
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-medical-secondary/10 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-medical-secondary/10">
                 <span className="text-sm font-semibold text-medical-secondary">O</span>
               </div>
               <Label htmlFor="objective" className="text-base font-medium">Objective</Label>
@@ -105,7 +106,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
                 placeholder="Physical examination findings, vital signs, and assessment details..."
                 value={soapNote.objective}
                 onChange={(e) => handleFieldChange('objective', e.target.value)}
-                className="min-h-[120px] border-medical-secondary/20 focus:border-medical-secondary/40 rounded-lg resize-none transition-all duration-200"
+                className="min-h-[120px] rounded-lg resize-none transition-all duration-200  focus:bg-white border-gray-200  focus:ring-2 focus:ring-medical-primary"
                 maxLength={MAX_CHARS}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
@@ -117,8 +118,8 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
           
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-medical-accent/10 flex items-center justify-center">
-                <span className="text-sm font-semibold text-medical-accent">A</span>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-medical-info/10">
+                <span className="text-sm font-semibold text-medical-info">A</span>
               </div>
               <Label htmlFor="assessment" className="text-base font-medium">Assessment</Label>
             </div>
@@ -128,7 +129,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
                 placeholder="Clinical assessment, differential diagnosis, and visit type (consultation/emergency)..."
                 value={soapNote.assessment}
                 onChange={(e) => handleFieldChange('assessment', e.target.value)}
-                className="min-h-[120px] border-medical-accent/20 focus:border-medical-accent/40 rounded-lg resize-none transition-all duration-200"
+                className="min-h-[120px] rounded-lg resize-none transition-all duration-200  focus:bg-white border-gray-200  focus:ring-2 focus:ring-medical-primary"
                 maxLength={MAX_CHARS}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
@@ -140,7 +141,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
           
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-medical-warning/10 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-medical-warning/10">
                 <span className="text-sm font-semibold text-medical-warning">P</span>
               </div>
               <Label htmlFor="plan" className="text-base font-medium">Plan</Label>
@@ -151,7 +152,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
                 placeholder="Treatment plan, medications, procedures, and follow-up appointment details..."
                 value={soapNote.plan}
                 onChange={(e) => handleFieldChange('plan', e.target.value)}
-                className="min-h-[120px] border-medical-warning/20 focus:border-medical-warning/40 rounded-lg resize-none transition-all duration-200"
+                className="min-h-[120px] rounded-lg resize-none transition-all duration-200  focus:bg-white border-gray-200  focus:ring-2 focus:ring-medical-primary"
                 maxLength={MAX_CHARS}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
@@ -171,7 +172,7 @@ const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assess
           <Button
             onClick={(e) => handleSuggestCodes(e, true)}
             disabled={isLoading || isSOAPEmpty}
-            className="bg-gradient-to-r from-medical-primary to-medical-secondary hover:from-medical-primary/90 hover:to-medical-secondary/90 text-white shadow-lg"
+            className="bg-medical-primary hover:bg-medical-primary-hover text-white shadow-sm transition-colors duration-200"
             size="lg"
           >
             <Lightbulb className="h-4 w-4 mr-2" />

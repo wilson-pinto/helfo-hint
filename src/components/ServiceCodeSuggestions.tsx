@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { medicalClasses } from '../theme/colors';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -36,9 +37,9 @@ export const ServiceCodeSuggestions = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mb-6 border-medical-secondary/20 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-medical-secondary/5 to-medical-primary/5 border-b border-medical-secondary/10">
-        <CardTitle className="flex items-center gap-2 text-medical-secondary">
+      <Card className="mb-6 bg-medical-surface">
+        <CardHeader className="bg-gradient-to-r from-medical-secondary/5 to-medical-primary/5">
+          <CardTitle className="flex items-center gap-2 text-medical-secondary">
           <Activity className="h-5 w-5" />
           AI-Generated Service Code Suggestions
         </CardTitle>
@@ -47,14 +48,8 @@ export const ServiceCodeSuggestions = () => {
         </p>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="border border-medical-secondary/20 rounded-lg p-4 bg-gradient-to-br from-medical-secondary/5 to-transparent">
+        <div className="rounded-lg">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-xl flex items-center gap-3 text-medical-secondary">
-              <div className="w-8 h-8 rounded-full bg-medical-secondary/10 flex items-center justify-center">
-                <Activity className="h-4 w-4" />
-              </div>
-              Service Codes (HELFO / Tjenestekoder)
-            </h3>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -91,7 +86,7 @@ export const ServiceCodeSuggestions = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/5 transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-medical-neutral bg-medical-surface"
               >
                 <div className="flex items-center gap-3">
                   <Badge variant="outline" className="font-mono">
@@ -125,24 +120,23 @@ export const ServiceCodeSuggestions = () => {
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
-                    variant="default"
                     onClick={() => dispatch(acceptCode({ id: code.id, type: 'service' }))}
-                    className="bg-medical-success hover:bg-medical-success/90"
+                    className={medicalClasses.button.success}
                   >
                     <Check className="h-4 w-4 mr-1" />
                     Accept
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
                     onClick={() => dispatch(rejectCode({ id: code.id, type: 'service' }))}
+                    className={`${medicalClasses.button.error} hover:opacity-90`}
                   >
                     <X className="h-4 w-4 mr-1" />
                     Reject
                   </Button>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button size="sm" variant="ghost">
+                      <Button size="sm" variant="ghost" className="hover:bg-medical-neutral">
                         <HelpCircle className="h-4 w-4" />
                       </Button>
                     </PopoverTrigger>

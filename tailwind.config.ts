@@ -10,6 +10,9 @@ export default {
 	],
 	prefix: "",
 	theme: {
+		fontFamily: {
+			sans: ['Inter', 'sans-serif'],
+		},
 		container: {
 			center: true,
 			padding: '2rem',
@@ -63,11 +66,26 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				medical: {
-					primary: 'hsl(var(--medical-primary))',
-					success: 'hsl(var(--medical-success))',
-					warning: 'hsl(var(--medical-warning))',
-					error: 'hsl(var(--medical-error))',
-					info: 'hsl(var(--medical-info))'
+					primary: '#3366FF',
+					'primary-hover': '#1A53FF',
+
+					secondary: '#2EC4B6',
+					'secondary-hover': '#27B0A3',
+
+					success: '#3DBE7A',
+					'success-hover': '#33A96A',
+
+					warning: '#F4B740',
+					'warning-hover': '#DCA537',
+
+					error: '#E4572E',
+					'error-hover': '#C64521',
+
+					info: '#6AC6FF',
+					background: '#F5F7FA',
+					neutral: '#E1E8ED',
+					surface: '#FFFFFF',
+					foreground: '#1A1A1A'
 				},
 				confidence: {
 					high: 'hsl(var(--confidence-high))',

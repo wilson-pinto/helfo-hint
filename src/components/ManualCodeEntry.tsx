@@ -120,9 +120,9 @@ export const ManualCodeEntry = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mb-6 border-medical-accent/20">
-        <CardHeader className="bg-gradient-to-r from-medical-accent/5 to-medical-warning/5 border-b border-medical-accent/10">
-          <CardTitle className="flex items-center gap-2 text-medical-accent">
+      <Card className="mb-6 bg-medical-surface">
+        <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-warning/5">
+          <CardTitle className="flex items-center gap-2 text-medical-primary">
             <Search className="h-5 w-5" />
             Manual Code Entry
           </CardTitle>
@@ -180,7 +180,7 @@ export const ManualCodeEntry = () => {
                           }
                           value={manualCodeInput}
                           onChange={(e) => handleInputChange(e.target.value)}
-                          className="w-full border-medical-accent/20 focus:border-medical-accent/40"
+                          className="w-full border-gray-200 focus:bg-white focus:ring-2 focus:ring-medical-primary"
                           onKeyDown={handleKeyDown}
                         />
                         <AnimatePresence>
@@ -189,14 +189,14 @@ export const ManualCodeEntry = () => {
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="absolute top-full left-0 w-full max-h-40 overflow-y-auto bg-card border rounded-md mt-1 z-10 shadow-md"
+                              className="absolute top-full left-0 w-full max-h-40 overflow-y-auto rounded-md mt-1 z-10 bg-medical-surface"
                             >
                               {suggestions
                                 .filter(s => s.code.toLowerCase().includes(manualCodeInput.toLowerCase()))
                                 .map((suggestion, index) => (
                                   <div
                                     key={index}
-                                    className="p-2 hover:bg-gray-100 cursor-pointer flex justify-between"
+                                    className="p-2 hover:bg-medical-neutral cursor-pointer flex justify-between"
                                     onClick={() => handleSuggestionClick(suggestion.code)}
                                   >
                                     <span className="font-mono">{suggestion.code}</span>
@@ -211,14 +211,14 @@ export const ManualCodeEntry = () => {
                         onClick={handleValidate}
                         disabled={pendingCodes.length === 0 || isValidating}
                         variant="outline"
-                        className="border-medical-accent/30 hover:bg-medical-accent/10"
+                        className="bg-medical-primary hover:bg-medical-primary-hover text-white border-0"
                       >
                         <Search className="h-4 w-4 mr-2" />
                         {isValidating ? 'Validating...' : 'Validate'}
                       </Button>
                     </div>
                     {pendingCodes.length > 0 && (
-                      <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-muted/30">
+                      <div className="flex flex-wrap gap-2 p-2 rounded-lg bg-medical-neutral">
                         {pendingCodes.map((code, index) => (
                           <Badge 
                             key={index}
@@ -253,11 +253,9 @@ export const ManualCodeEntry = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className={`flex items-start gap-3 p-4 rounded-lg border mt-4 ${
-                  manualCodeValidation.isValid
-                    ? 'bg-medical-success/10 border-medical-success/20'
-                    : 'bg-medical-error/10 border-medical-error/20'
-                }`}
+                className={`flex items-start gap-3 p-4 rounded-lg mt-4 ${
+                  manualCodeValidation.isValid ? 'bg-medical-success' : 'bg-medical-error'
+                } text-medical-foreground`}
               >
                 {getValidationIcon()}
                 <div className="flex-1">
@@ -269,7 +267,7 @@ export const ManualCodeEntry = () => {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                            <Info className="h-4 w-4 cursor-help text-medical-info" />
                           </TooltipTrigger>
                           <TooltipContent>
                             <p className="text-sm">
@@ -302,7 +300,7 @@ export const ManualCodeEntry = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center justify-between p-3 border rounded-lg bg-card hover:bg-accent/5 transition-colors"
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-medical-neutral transition-colors bg-medical-surface"
                     >
                       <div className="flex items-center gap-3">
                         <Badge variant="outline" className="font-mono">
@@ -317,7 +315,7 @@ export const ManualCodeEntry = () => {
                         size="sm"
                         variant="ghost"
                         onClick={() => dispatch(removeManualCode(code.id))}
-                        className="text-medical-error hover:text-medical-error hover:bg-medical-error/10"
+                        className="bg-medical-surface hover:bg-medical-error hover:text-white text-medical-error"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -328,7 +326,7 @@ export const ManualCodeEntry = () => {
             </div>
           )}
 
-          <div className="text-xs text-muted-foreground border-t mt-6 pt-3">
+          <div className="text-xs mt-6 pt-3 text-medical-primary">
             <p><strong>Supported formats:</strong> ICD-10 (A09, J06), ICPC-2 (D78, R74), HELFO/Service codes (2ae, 1ae)</p>
             <p className="mt-1">Enter multiple codes separated by commas</p>
           </div>
