@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Check, X, HelpCircle, Activity, Stethoscope } from 'lucide-react';
+import { Activity, Check, X, HelpCircle } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { acceptCode, rejectCode } from '../store/slices/medicalSlice';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-export const CodeSuggestions = () => {
+export const ServiceCodeSuggestions = () => {
   const dispatch = useAppDispatch();
   const { suggestedCodes } = useAppSelector((state) => state.medical);
 
@@ -22,33 +22,33 @@ export const CodeSuggestions = () => {
     return 'Low';
   };
 
-  const diagnosisCodes = suggestedCodes.filter(code => code.type === 'diagnosis');
+  const serviceCodes = suggestedCodes.filter(code => code.type === 'service');
 
-  if (diagnosisCodes.length === 0) {
+  if (serviceCodes.length === 0) {
     return null;
   }
 
   return (
-    <Card className="mb-6 border-medical-warning/20 shadow-lg">
-      <CardHeader className="bg-gradient-to-r from-medical-primary/5 to-medical-warning/5 border-b border-medical-primary/10">
-        <CardTitle className="flex items-center gap-2 text-medical-primary">
-          <Lightbulb className="h-5 w-5" />
-          AI-Generated Diagnosis Code Suggestions
+    <Card className="mb-6 border-medical-secondary/20 shadow-lg">
+      <CardHeader className="bg-gradient-to-r from-medical-secondary/5 to-medical-primary/5 border-b border-medical-secondary/10">
+        <CardTitle className="flex items-center gap-2 text-medical-secondary">
+          <Activity className="h-5 w-5" />
+          AI-Generated Service Code Suggestions
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1">
-          Diagnosis codes automatically suggested based on your SOAP note content
+          Service codes automatically suggested based on your SOAP note content
         </p>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="border border-medical-primary/20 rounded-lg p-4 bg-gradient-to-br from-medical-primary/5 to-transparent">
-          <h3 className="font-semibold text-xl mb-4 flex items-center gap-3 text-medical-primary">
-            <div className="w-8 h-8 rounded-full bg-medical-primary/10 flex items-center justify-center">
-              <Stethoscope className="h-4 w-4" />
+        <div className="border border-medical-secondary/20 rounded-lg p-4 bg-gradient-to-br from-medical-secondary/5 to-transparent">
+          <h3 className="font-semibold text-xl mb-4 flex items-center gap-3 text-medical-secondary">
+            <div className="w-8 h-8 rounded-full bg-medical-secondary/10 flex items-center justify-center">
+              <Activity className="h-4 w-4" />
             </div>
-            Diagnosis Codes (ICD-10 / ICPC-2)
+            Service Codes (HELFO / Tjenestekoder)
           </h3>
           <div className="space-y-3">
-            {diagnosisCodes.map((code) => (
+            {serviceCodes.map((code) => (
               <div key={code.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center gap-3">
                   <Badge variant="outline" className="font-mono">
@@ -94,8 +94,8 @@ export const CodeSuggestions = () => {
                       <div className="space-y-2">
                         <h4 className="font-semibold">Why this suggestion?</h4>
                         <p className="text-sm">
-                          This code was suggested based on keywords and symptoms mentioned in your SOAP note.
-                          Confidence is based on relevance to the clinical presentation.
+                          This service code was suggested based on the type of consultation or procedure
+                          indicated in your SOAP note documentation.
                         </p>
                       </div>
                     </PopoverContent>

@@ -2,6 +2,7 @@ import { Header } from '../components/Header';
 import { IntroSection } from '../components/IntroSection';
 import { SOAPInput } from '../components/SOAPInput';
 import { CodeSuggestions } from '../components/CodeSuggestions';
+import { ServiceCodeSuggestions } from '../components/ServiceCodeSuggestions';
 import { AcceptedCodes } from '../components/AcceptedCodes';
 import { ManualCodeEntry } from '../components/ManualCodeEntry';
 import { Footer } from '../components/Footer';
@@ -17,6 +18,7 @@ const Index = () => {
           <div className="lg:col-span-2 space-y-6">
             <SOAPInput />
             <CodeSuggestions />
+            <ServiceCodeSuggestions />
             <ManualCodeEntry />
           </div>
           
