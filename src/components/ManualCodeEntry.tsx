@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Search, CheckCircle, XCircle, Info, Plus, X, Stethoscope, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { setManualCodeInput, setManualCodeValidation, clearManualCodeValidation, addManualCode, removeManualCode } from '../store/slices/medicalSlice';
 import { validateCode, mockDiagnosisCodes, mockServiceCodes } from '../services/medicalCodes';
@@ -70,17 +77,27 @@ export const ManualCodeEntry = () => {
 
       const invalidCodes = pendingCodes.filter((_, index) => !validationResults[index].isValid);
       
+      // Clear selections after validation
+      setPendingCodes([]);
+      dispatch(setManualCodeInput(''));
+      
       if (invalidCodes.length > 0) {
         dispatch(setManualCodeValidation({
           isValid: false,
           message: `Invalid codes found: ${invalidCodes.join(', ')}`
         }));
       } else {
-        dispatch(clearManualCodeValidation());
-        setPendingCodes([]);
+        dispatch(setManualCodeValidation({
+          isValid: true,
+          message: `Successfully validated ${validCodes.length} code${validCodes.length !== 1 ? 's' : ''}`
+        }));
       }
     } catch (error) {
       console.error('Error validating codes:', error);
+      dispatch(setManualCodeValidation({
+        isValid: false,
+        message: 'An error occurred while validating codes'
+      }));
     } finally {
       setIsValidating(false);
     }
@@ -94,12 +111,18 @@ export const ManualCodeEntry = () => {
   };
 
   const handleSuggestionClick = (code: string) => {
-    addCodeToPending(code);
+    if (!pendingCodes.includes(code)) {
+      setPendingCodes([...pendingCodes, code]);
+      dispatch(setManualCodeInput(''));
+    }
   };
 
   const handleRemovePendingCode = (index: number) => {
     const newCodes = pendingCodes.filter((_, i) => i !== index);
     setPendingCodes(newCodes);
+    if (manualCodeValidation) {
+      dispatch(clearManualCodeValidation());
+    }
   };
 
   const getValidationIcon = () => {
@@ -124,10 +147,10 @@ export const ManualCodeEntry = () => {
       <CardHeader className="bg-medical-primary/10 rounded-t-lg">
         <CardTitle className="flex items-center gap-2 text-medical-primary">
             <Search className="h-5 w-5" />
-            Manual Code Entry
+            Validate Code
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Add multiple codes manually (separate by commas)
+            Select codes and validate
           </p>
         </CardHeader>
         <CardContent className="p-6">
@@ -163,83 +186,91 @@ export const ManualCodeEntry = () => {
                         ) : (
                           <>
                             <SelectItem value="HELFO">HELFO</SelectItem>
-                            <SelectItem value="Tjenestekoder">Tjenestekoder</SelectItem>
+                            {/* <SelectItem  value="Tjenestekoder">Tjenestekoder</SelectItem> */}
                           </>
                         )}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <div className="flex-1 relative">
-                        <Input
-                          id={`manual-code-${tab}`}
-                          placeholder={tab === 'diagnosis' 
-                            ? (selectedSystem === 'ICD-10' ? "e.g., A09, J06, K59.1" : "e.g., D73, L70, R74")
-                            : "e.g., 2ae, 1ae, 2ak"
-                          }
-                          value={manualCodeInput}
-                          onChange={(e) => handleInputChange(e.target.value)}
-                          className="w-full border-gray-200 focus:bg-white focus:ring-2 focus:ring-medical-primary"
-                          onKeyDown={handleKeyDown}
-                        />
-                        <AnimatePresence>
-                          {manualCodeInput && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="absolute top-full left-0 w-full max-h-40 overflow-y-auto rounded-md mt-1 z-10 bg-medical-surface"
-                            >
+                    <div className="space-y-4">
+                      <div className="rounded-lg border">
+                        <Command className="rounded-lg">
+                          <CommandInput
+                            placeholder={tab === 'diagnosis'
+                              ? (selectedSystem === 'ICD-10' ? "Search ICD-10 codes..." : "Search ICPC-2 codes...")
+                              : "Search service codes..."
+                            }
+                            value={manualCodeInput}
+                            onValueChange={handleInputChange}
+                          />
+                          <CommandList>
+                            <CommandEmpty>No codes found.</CommandEmpty>
+                            <CommandGroup>
                               {suggestions
-                                .filter(s => s.code.toLowerCase().includes(manualCodeInput.toLowerCase()))
+                                .filter(s =>
+                                  !pendingCodes.includes(s.code) && (
+                                    s.code.toLowerCase().includes(manualCodeInput.toLowerCase()) ||
+                                    s.description.toLowerCase().includes(manualCodeInput.toLowerCase())
+                                  )
+                                )
                                 .map((suggestion, index) => (
-                                  <div
+                                  <CommandItem
                                     key={index}
-                                    className="p-2 hover:bg-medical-neutral cursor-pointer flex justify-between"
-                                    onClick={() => handleSuggestionClick(suggestion.code)}
+                                    onSelect={() => handleSuggestionClick(suggestion.code)}
+                                    className="flex justify-between"
                                   >
-                                    <span className="font-mono">{suggestion.code}</span>
-                                    <span className="text-sm text-gray-600">{suggestion.description}</span>
-                                  </div>
+                                    <Badge variant="outline" className="font-mono">
+                                      {suggestion.code}
+                                    </Badge>
+                                    <span className="text-sm text-muted-foreground truncate ml-2">
+                                      {suggestion.description}
+                                    </span>
+                                  </CommandItem>
                                 ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
                       </div>
-                      <Button
-                        onClick={handleValidate}
-                        disabled={pendingCodes.length === 0 || isValidating}
-                        variant="outline"
-                        className="bg-medical-primary hover:bg-medical-primary-hover text-white border-0"
-                      >
-                        <Search className="h-4 w-4 mr-2" />
-                        {isValidating ? 'Validating...' : 'Validate'}
-                      </Button>
-                    </div>
-                    {pendingCodes.length > 0 && (
-                      <div className="flex flex-wrap gap-2 p-2 rounded-lg bg-medical-neutral">
-                        {pendingCodes.map((code, index) => (
-                          <Badge 
-                            key={index}
-                            variant="outline"
-                            className={`font-mono ${
-                              manualCodeValidation?.isValid && manualCodeValidation.code?.code === code
-                                ? 'border-medical-success text-medical-success'
-                                : ''
-                            }`}
+
+                      <AnimatePresence>
+                        {pendingCodes.length > 0 && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-2"
                           >
-                            {code}
-                            <button 
-                              onClick={() => handleRemovePendingCode(index)}
-                              className="ml-1 hover:text-medical-error"
+                            <div className="flex flex-wrap gap-2 p-3 rounded-lg bg-medical-neutral/50">
+                              {pendingCodes.map((code, index) => (
+                                <Badge
+                                  key={index}
+                                  variant="secondary"
+                                  className="font-mono bg-white"
+                                >
+                                  {code}
+                                  <button
+                                    onClick={() => handleRemovePendingCode(index)}
+                                    className="ml-1 hover:text-medical-error"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+                            <Button
+                              onClick={handleValidate}
+                              disabled={isValidating}
+                              className="w-full bg-medical-primary hover:bg-medical-primary-hover text-white"
                             >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                              <Search className="h-4 w-4 mr-2" />
+                              {isValidating ? 'Validating...' : `Validate ${pendingCodes.length} Selected Code${pendingCodes.length !== 1 ? 's' : ''}`}
+                            </Button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -253,44 +284,33 @@ export const ManualCodeEntry = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className={`flex items-start gap-3 p-4 rounded-lg mt-4 ${
-                  manualCodeValidation.isValid ? 'bg-medical-success' : 'bg-medical-error'
-                } text-medical-foreground`}
+                className={`p-4 rounded-lg mt-4 ${
+                  manualCodeValidation.isValid
+                    ? 'bg-medical-success/10 border border-medical-success/20'
+                    : 'bg-medical-error/10 border border-medical-error/20'
+                }`}
               >
-                {getValidationIcon()}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-medium ${getValidationColor()}`}>
-                        {manualCodeValidation.isValid ? 'Valid Codes Found' : 'Invalid Codes Found'}
-                      </span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 cursor-help text-medical-info" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-sm">
-                              {manualCodeValidation.isValid
-                                ? `Valid ${selectedSystem} code found in the system`
-                                : `Please check the code format for ${selectedSystem}`}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </div>
-                  <p className={`text-sm ${getValidationColor()}`}>
-                    {manualCodeValidation.message}
-                  </p>
+                <div className="flex items-center gap-2 mb-2">
+                  {getValidationIcon()}
+                  <span className={`font-medium ${getValidationColor()}`}>
+                    {manualCodeValidation.isValid ? 'Validation Successful' : 'Validation Failed'}
+                  </span>
                 </div>
+                <p className={`text-sm ${getValidationColor()}`}>
+                  {manualCodeValidation.message}
+                </p>
               </motion.div>
             )}
           </AnimatePresence>
 
           {manualCodes.length > 0 && (
-            <div className="space-y-3 mt-6">
-              <Label className="text-base font-medium">Added Codes ({manualCodes.length})</Label>
+            <div className="mt-6 border-t pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-base font-medium">Validated Codes</Label>
+                <Badge variant="outline" className="bg-medical-success/10 text-medical-success border-medical-success">
+                  {manualCodes.length} code{manualCodes.length !== 1 ? 's' : ''} added
+                </Badge>
+              </div>
               <div className="grid gap-2">
                 <AnimatePresence mode="popLayout">
                   {manualCodes.map((code) => (
@@ -300,7 +320,7 @@ export const ManualCodeEntry = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       transition={{ duration: 0.2 }}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-medical-neutral transition-colors bg-medical-surface"
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-medical-neutral/50 transition-colors bg-medical-surface border border-border/50"
                     >
                       <div className="flex items-center gap-3">
                         <Badge variant="outline" className="font-mono">
