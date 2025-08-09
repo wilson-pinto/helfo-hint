@@ -1,16 +1,35 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Lightbulb, Check, X, HelpCircle, Activity, Stethoscope, PieChart } from 'lucide-react';
+import { Copy, Check, HelpCircle, Activity, PieChart, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppDispatch, useAppSelector } from '../hooks/redux';
-import { acceptCode, rejectCode } from '../store/slices/medicalSlice';
+import { useAppSelector } from '../hooks/redux';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useState } from 'react';
+import { useToast } from '../hooks/use-toast';
+import { CodeSuggestion } from '../store/slices/medicalSlice';
 
-export const CodeSuggestions = () => {
-  const dispatch = useAppDispatch();
-  const { suggestedCodes } = useAppSelector((state) => state.medical);
+interface CodeListProps {
+  codes: CodeSuggestion[];
+  title: string;
+  error?: string;
+}
+
+const CodeList = ({ codes, title, error }: CodeListProps) => {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleCopy = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedId(code);
+    toast({
+      title: "Code Copied!",
+      description: `${code} has been copied to clipboard`,
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence >= 85) return 'bg-confidence-high';
@@ -24,29 +43,25 @@ export const CodeSuggestions = () => {
     return 'Low';
   };
 
-  const diagnosisCodes = suggestedCodes.filter(code => code.type === 'diagnosis');
-
-  if (diagnosisCodes.length === 0) {
+  if (codes.length === 0 && !error) {
     return null;
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <Card className="mb-6 border-medical-warning/20">
-        <CardHeader className="bg-medical-primary/10 rounded-t-lg">
-          <CardTitle className="flex items-center gap-2 text-medical-primary">
-            <Activity className="h-5 w-5" />
-            AI-Generated Diagnosis Code Suggestions
-          </CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Diagnosis codes automatically suggested based on your SOAP note content
-          </p>
-        </CardHeader>
-        <CardContent className="p-6">
+    <Card className="mb-6 border-medical-warning/20">
+      <CardHeader className="bg-medical-primary/10 rounded-t-lg">
+        <CardTitle className="flex items-center gap-2 text-medical-primary">
+          <Activity className="h-5 w-5" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-6">
+        {error ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : (
           <div>
             <div className="flex items-center justify-between mb-4">
               <TooltipProvider>
@@ -78,7 +93,7 @@ export const CodeSuggestions = () => {
             </div>
             <AnimatePresence mode="popLayout">
               <div className="space-y-3">
-                {diagnosisCodes.map((code) => (
+                {codes.map((code) => (
                   <motion.div
                     key={code.id}
                     initial={{ opacity: 0, x: -20 }}
@@ -120,19 +135,15 @@ export const CodeSuggestions = () => {
                       <Button
                         size="sm"
                         variant="default"
-                        onClick={() => dispatch(acceptCode({ id: code.id, type: 'diagnosis' }))}
-                        className="bg-medical-success hover:bg-medical-success/90"
+                        onClick={() => handleCopy(code.code)}
+                        className="bg-medical-primary hover:bg-medical-primary/90"
                       >
-                        <Check className="h-4 w-4 mr-1" />
-                        Accept
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => dispatch(rejectCode({ id: code.id, type: 'diagnosis' }))}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Reject
+                        {copiedId === code.code ? (
+                          <Check className="h-4 w-4 mr-1" />
+                        ) : (
+                          <Copy className="h-4 w-4 mr-1" />
+                        )}
+                        {copiedId === code.code ? 'Copied!' : 'Copy Code'}
                       </Button>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -163,8 +174,34 @@ export const CodeSuggestions = () => {
               </div>
             </AnimatePresence>
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export const CodeSuggestions = () => {
+  const { suggestedCodes, errors } = useAppSelector((state) => state.medical);
+
+  const diagnosisCodes = suggestedCodes.filter(code => code.type === 'diagnosis');
+  const serviceCodes = suggestedCodes.filter(code => code.type === 'service');
+
+  if (diagnosisCodes.length === 0 && serviceCodes.length === 0 && !errors) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-6">
+      <CodeList 
+        codes={diagnosisCodes} 
+        title="AI-Generated Diagnosis Code Suggestions"
+        error={errors?.diagnosis}
+      />
+      <CodeList 
+        codes={serviceCodes} 
+        title="AI-Generated Service Code Suggestions"
+        error={errors?.service}
+      />
+    </div>
   );
 };

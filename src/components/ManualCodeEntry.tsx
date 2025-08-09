@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Search, CheckCircle, XCircle, Info, Plus, X, Stethoscope, Activity } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Plus, X, Stethoscope, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Command,
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/command';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { setManualCodeInput, setManualCodeValidation, clearManualCodeValidation, addManualCode, removeManualCode } from '../store/slices/medicalSlice';
-import { validateCode, mockDiagnosisCodes, mockServiceCodes } from '../services/medicalCodes';
+import { validateCode, getSuggestions, CodeSuggestionSimple } from '../services/medicalCodes';
 import { useState, useEffect, KeyboardEvent } from 'react';
 
 export const ManualCodeEntry = () => {
@@ -27,7 +27,8 @@ export const ManualCodeEntry = () => {
   const [selectedTab, setSelectedTab] = useState<'diagnosis' | 'service'>('diagnosis');
   const [selectedSystem, setSelectedSystem] = useState<'ICD-10' | 'ICPC-2' | 'HELFO' | 'Tjenestekoder'>('ICD-10');
   const [pendingCodes, setPendingCodes] = useState<string[]>([]);
-  const [suggestions, setSuggestions] = useState<Array<{code: string, description: string}>>([]);
+  const [suggestions, setSuggestions] = useState<CodeSuggestionSimple[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Update selectedSystem when tab changes
   useEffect(() => {
@@ -39,14 +40,21 @@ export const ManualCodeEntry = () => {
 
   // Get suggestions based on selected system and tab
   useEffect(() => {
-    const relevantCodes = selectedTab === 'diagnosis'
-      ? mockDiagnosisCodes.filter(code => code.system === selectedSystem)
-      : mockServiceCodes.filter(code => code.system === selectedSystem);
-    setSuggestions(relevantCodes.map(code => ({
-      code: code.code,
-      description: code.description
-    })));
-  }, [selectedSystem, selectedTab]);
+    const fetchSuggestions = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getSuggestions(selectedSystem);
+        setSuggestions(data);
+      } catch (error) {
+        console.error('Error fetching suggestions:', error);
+        setSuggestions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSuggestions();
+  }, [selectedSystem]);
 
   const addCodeToPending = (code: string) => {
     if (!pendingCodes.includes(code)) {
@@ -144,8 +152,8 @@ export const ManualCodeEntry = () => {
       transition={{ duration: 0.3 }}
     >
       <Card className="mb-6 bg-medical-surface">
-      <CardHeader className="bg-medical-primary/10 rounded-t-lg">
-        <CardTitle className="flex items-center gap-2 text-medical-primary">
+        <CardHeader className="bg-medical-primary/10 rounded-t-lg">
+          <CardTitle className="flex items-center gap-2 text-medical-primary">
             <Search className="h-5 w-5" />
             Validate Code
           </CardTitle>
@@ -186,7 +194,7 @@ export const ManualCodeEntry = () => {
                         ) : (
                           <>
                             <SelectItem value="HELFO">HELFO</SelectItem>
-                            {/* <SelectItem  value="Tjenestekoder">Tjenestekoder</SelectItem> */}
+                            <SelectItem value="Tjenestekoder">Tjenestekoder</SelectItem>
                           </>
                         )}
                       </SelectContent>
@@ -197,15 +205,17 @@ export const ManualCodeEntry = () => {
                       <div className="rounded-lg border">
                         <Command className="rounded-lg">
                           <CommandInput
-                            placeholder={tab === 'diagnosis'
-                              ? (selectedSystem === 'ICD-10' ? "Search ICD-10 codes..." : "Search ICPC-2 codes...")
-                              : "Search service codes..."
+                            placeholder={isLoading ? "Loading suggestions..." :
+                              tab === 'diagnosis'
+                                ? (selectedSystem === 'ICD-10' ? "Search ICD-10 codes..." : "Search ICPC-2 codes...")
+                                : "Search service codes..."
                             }
                             value={manualCodeInput}
                             onValueChange={handleInputChange}
+                            disabled={isLoading}
                           />
                           <CommandList>
-                            <CommandEmpty>No codes found.</CommandEmpty>
+                            <CommandEmpty>{isLoading ? "Loading..." : "No codes found."}</CommandEmpty>
                             <CommandGroup>
                               {suggestions
                                 .filter(s =>

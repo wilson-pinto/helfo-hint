@@ -31,6 +31,10 @@ interface MedicalState {
   isLoading: boolean;
   manualCodeInput: string;
   manualCodes: CodeSuggestion[];
+  errors?: {
+    diagnosis?: string;
+    service?: string;
+  };
   manualCodeValidation: {
     isValid?: boolean;
     message?: string;
@@ -66,6 +70,7 @@ const initialState: MedicalState = {
   isLoading: false,
   manualCodeInput: '',
   manualCodes: [],
+  errors: undefined,
   manualCodeValidation: null,
   ui: {
     activeTab: 'diagnosis',
@@ -108,22 +113,8 @@ const medicalSlice = createSlice({
     setSuggestedCodes: (state, action: PayloadAction<CodeSuggestion[]>) => {
       state.suggestedCodes = action.payload;
     },
-    acceptCode: (state, action: PayloadAction<{ id: string; type: 'diagnosis' | 'service' }>) => {
-      const codes = action.payload.type === 'diagnosis' ? state.suggestedCodes : state.suggestedServiceCodes;
-      const code = codes.find(c => c.id === action.payload.id);
-      if (code && !state.acceptedCodes.find(ac => ac.id === code.id)) {
-        state.acceptedCodes.unshift({ ...code, accepted: true });
-      }
-    },
-    rejectCode: (state, action: PayloadAction<{ id: string; type: 'diagnosis' | 'service' }>) => {
-      if (action.payload.type === 'diagnosis') {
-        state.suggestedCodes = state.suggestedCodes.filter(c => c.id !== action.payload.id);
-      } else {
-        state.suggestedServiceCodes = state.suggestedServiceCodes.filter(c => c.id !== action.payload.id);
-      }
-    },
-    removeAcceptedCode: (state, action: PayloadAction<string>) => {
-      state.acceptedCodes = state.acceptedCodes.filter(c => c.id !== action.payload);
+    setErrors: (state, action: PayloadAction<{ diagnosis?: string; service?: string } | undefined>) => {
+      state.errors = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -153,9 +144,7 @@ export const {
   updateSOAPCharCount,
   setSuggestedCodes,
   setSuggestedServiceCodes,
-  acceptCode,
-  rejectCode,
-  removeAcceptedCode,
+  setErrors,
   setLoading,
   setManualCodeInput,
   setManualCodeValidation,

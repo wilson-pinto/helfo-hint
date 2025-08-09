@@ -3,14 +3,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { FileText, Lightbulb, AlertCircle } from 'lucide-react';
+import { FileText, Lightbulb } from 'lucide-react';
 import { medicalClasses } from '../theme/colors';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import {
   updateSOAPField,
   updateSOAPCharCount,
   setSuggestedCodes,
-  setSuggestedServiceCodes,
+  setErrors,
   setLoading
 } from '../store/slices/medicalSlice';
 import { generateCodeSuggestions } from '../services/medicalCodes';
@@ -44,18 +44,27 @@ export const SOAPInput = () => {
     }
     try {
       const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`;
-      const { diagnosisCodes, serviceCodes } = await generateCodeSuggestions(fullNote);
-      dispatch(setSuggestedCodes(diagnosisCodes));
-      dispatch(setSuggestedServiceCodes(serviceCodes));
+      const { diagnosisCodes, serviceCodes, errors } = await generateCodeSuggestions(fullNote);
+      
+      if (errors) {
+        dispatch(setErrors(errors));
+      } else {
+        dispatch(setErrors(undefined));
+        dispatch(setSuggestedCodes([...diagnosisCodes, ...serviceCodes]));
+      }
     } catch (error) {
       console.error('Error generating suggestions:', error);
+      dispatch(setErrors({
+        diagnosis: error instanceof Error ? error.message : 'Failed to fetch suggestions',
+        service: error instanceof Error ? error.message : 'Failed to fetch suggestions'
+      }));
     } finally {
       dispatch(setLoading(false));
     }
   };
+
   const isSOAPEmpty = !soapNote.subjective && !soapNote.objective && !soapNote.assessment && !soapNote.plan;
   const fullNote = `${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`.trim();
-
 
   return (
     <Card className="mb-6 bg-medical-surface">
