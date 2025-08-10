@@ -1,0 +1,30 @@
+
+export type TScreen = 'code-guessing' | 'code-validation';
+
+export interface ISOAPNote {
+  subjective: string;
+  objective: string;
+  assessment: string;
+  plan: string;
+  characterCount: {
+    subjective: number;
+    objective: number;
+    assessment: number;
+    plan: number;
+  };
+}
+
+export interface ICodeSuggestion {
+  id: string;
+  code: string;
+  description: string;
+  type: 'diagnosis' | 'service';
+  system: 'ICD-10' | 'ICPC-2' | 'HELFO' | 'Tjenestekoder';
+  confidence: number;
+  accepted?: boolean;
+  validationStatus?: {
+    isValid: boolean;
+    message: string;
+    compatibleWithDiagnoses?: boolean;
+  };
+}

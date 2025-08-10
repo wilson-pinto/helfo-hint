@@ -1,134 +1,190 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { networkService } from '@/services/network';
+import { ICodeSuggestion, ISOAPNote, TScreen } from '@/types';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface SOAPNote {
-  subjective: string;
-  objective: string;
-  assessment: string;
-  plan: string;
-  characterCount: {
-    subjective: number;
-    objective: number;
-    assessment: number;
-    plan: number;
-  };
-}
 
-export interface CodeSuggestion {
-  id: string;
-  code: string;
-  description: string;
-  type: 'diagnosis' | 'service';
-  system: 'ICD-10' | 'ICPC-2' | 'HELFO' | 'Tjenestekoder';
-  confidence: number;
-  accepted?: boolean;
-}
+export const generateDiagnosisCodeSuggestions = createAsyncThunk(
+  'suggestions/generate/diagnosis',
+  async ({ soapNote }: { soapNote: ISOAPNote }, { rejectWithValue }) => {
+    try {
+      const diagnosisCodes = await networkService.diagnoses.extract(soapNote);
+      return { diagnosisCodes };
+    } catch (error) {
+      return rejectWithValue('Failed to generate suggestions');
+    }
+  }
+);
+
+export const generateServiceCodeSuggestions = createAsyncThunk(
+  'suggestions/generate/service',
+  async ({ soapNote }: { soapNote: ISOAPNote }, { rejectWithValue }) => {
+    try {
+      const serviceCodes = await networkService.services.extract(soapNote);
+      return { serviceCodes };
+    } catch (error) {
+      return rejectWithValue('Failed to generate suggestions');
+    }
+  }
+);
 
 interface MedicalState {
-  soapNote: SOAPNote;
-  suggestedCodes: CodeSuggestion[];
-  suggestedServiceCodes: CodeSuggestion[];
-  acceptedCodes: CodeSuggestion[];
-  isLoading: boolean;
-  manualCodeInput: string;
-  manualCodes: CodeSuggestion[];
-  errors?: {
+  currentScreen: TScreen;
+  soapNote: ISOAPNote;
+  suggestedDiagnosisCodes: ICodeSuggestion[];
+  suggestedServiceCodes: ICodeSuggestion[];
+  acceptedCodes: {
+    diagnosis: ICodeSuggestion[];
+    service: ICodeSuggestion[];
+  };
+  isLoading: {
+    diagnosisSuggestions: boolean;
+    serviceSuggestions: boolean;
+    validation: boolean;
+  };
+  errors: {
     diagnosis?: string;
     service?: string;
+    validation?: {
+      diagnosis?: string;
+      service?: string;
+    };
   };
+  manualCodeInput: string;
+  manualCodes: ICodeSuggestion[];
   manualCodeValidation: {
     isValid?: boolean;
     message?: string;
-    code?: CodeSuggestion;
+    code?: ICodeSuggestion;
   } | null;
   ui: {
     activeTab: 'diagnosis' | 'service';
     showHelp: boolean;
-    tooltips: {
-      [key: string]: boolean;
+    tooltips: Record<string, boolean>;
+    searchInput: {
+      diagnosis: string;
+      service: string;
     };
-    acceptedCodesFilter: 'all' | 'diagnosis' | 'service';
-    acceptedCodesSort: 'newest' | 'oldest' | 'type' | 'system';
   };
 }
 
 const initialState: MedicalState = {
+  currentScreen: 'code-guessing',
   soapNote: {
-    subjective: 'Patient reports nausea and stomach pain for 2 days',
-    objective: 'Temperature 37.8°C, abdominal tenderness',
-    assessment: 'Probable gastroenteritis examination findings',
-    plan: 'Oral rehydration, follow-up in 3 days',
+    subjective: "28‑year‑old male with 12‑hour onset of sharp RLQ abdominal pain (8/10), worsened by movement and coughing; nausea, two vomiting episodes, decreased appetite; no fever or bowel changes; no past medical history.",
+    objective: "Temp 99.8°F, BP 128/76 mmHg, HR 92 bpm, RR 18. Abdomen soft with RLQ tenderness, guarding, positive McBurney’s. WBC 14.5K. CT shows inflamed appendix with fat stranding.",
+    assessment: "Uncomplicated acute appendicitis supported by clinical signs, labs, and imaging.",
+    plan: "Admit for laparoscopic appendectomy; NPO, IV fluids LR 100 mL/hr, preop antibiotics cefotetan 1 g; obtain consent, schedule surgery; DVT prophylaxis; postop education; follow-up in 2 weeks for suture removal.",
     characterCount: {
-      subjective: 0,
-      objective: 0,
-      assessment: 0,
-      plan: 0
+      subjective: 323,
+      objective: 242,
+      assessment: 84,
+      plan: 286
     }
   },
-  suggestedCodes: [],
+  suggestedDiagnosisCodes: [],
   suggestedServiceCodes: [],
-  acceptedCodes: [],
-  isLoading: false,
+  acceptedCodes: {
+    diagnosis: [],
+    service: []
+  },
+  isLoading: {
+    diagnosisSuggestions: false,
+    serviceSuggestions: false,
+    validation: false
+  },
+  errors: {},
   manualCodeInput: '',
   manualCodes: [],
-  errors: undefined,
   manualCodeValidation: null,
   ui: {
     activeTab: 'diagnosis',
     showHelp: false,
     tooltips: {},
-    acceptedCodesFilter: 'all',
-    acceptedCodesSort: 'newest'
-  },
+    searchInput: {
+      diagnosis: '',
+      service: ''
+    }
+  }
 };
 
 const medicalSlice = createSlice({
   name: 'medical',
   initialState,
   reducers: {
-    updateSOAPCharCount: (state, action: PayloadAction<{ field: keyof SOAPNote; count: number }>) => {
-      state.soapNote.characterCount[action.payload.field] = action.payload.count;
+    setScreen: (state, action: PayloadAction<TScreen>) => {
+      state.currentScreen = action.payload;
     },
-    setSuggestedServiceCodes: (state, action: PayloadAction<CodeSuggestion[]>) => {
+    updateSOAPField: (state, action: PayloadAction<{ field: keyof Pick<ISOAPNote, 'subjective' | 'objective' | 'assessment' | 'plan'>; value: string }>) => {
+      const { field, value } = action.payload;
+      state.soapNote[field] = value;
+      state.soapNote.characterCount[field] = value.length;
+    },
+    setSuggestedDiagnosisCodes: (state, action: PayloadAction<ICodeSuggestion[]>) => {
+      state.suggestedDiagnosisCodes = action.payload;
+    },
+    setSuggestedServiceCodes: (state, action: PayloadAction<ICodeSuggestion[]>) => {
       state.suggestedServiceCodes = action.payload;
     },
-    setActiveTab: (state, action: PayloadAction<'diagnosis' | 'service'>) => {
-      state.ui.activeTab = action.payload;
+    acceptCode: (state, action: PayloadAction<ICodeSuggestion>) => {
+      const code = action.payload;
+      const targetArray = code.type === 'diagnosis'
+        ? state.acceptedCodes.diagnosis
+        : state.acceptedCodes.service;
+
+      if (!targetArray.find(c => c.code === code.code)) {
+        targetArray.push({ ...code, accepted: true });
+      }
     },
-    toggleHelp: (state) => {
-      state.ui.showHelp = !state.ui.showHelp;
+    removeCode: (state, action: PayloadAction<{ code: string; type: 'diagnosis' | 'service' }>) => {
+      const { code, type } = action.payload;
+      state.acceptedCodes[type] = state.acceptedCodes[type].filter(c => c.code !== code);
     },
-    setTooltipVisibility: (state, action: PayloadAction<{ id: string; visible: boolean }>) => {
-      state.ui.tooltips[action.payload.id] = action.payload.visible;
+    setValidationStatus: (state, action: PayloadAction<{
+      code: string;
+      type: 'diagnosis' | 'service';
+      status: {
+        isValid: boolean;
+        message: string;
+        compatibleWithDiagnoses?: boolean;
+      };
+    }>) => {
+      const { code, type, status } = action.payload;
+      const targetArray = type === 'diagnosis'
+        ? state.acceptedCodes.diagnosis
+        : state.acceptedCodes.service;
+
+      const codeIndex = targetArray.findIndex(c => c.code === code);
+      if (codeIndex !== -1) {
+        targetArray[codeIndex].validationStatus = status;
+      }
     },
-    setAcceptedCodesFilter: (state, action: PayloadAction<'all' | 'diagnosis' | 'service'>) => {
-      state.ui.acceptedCodesFilter = action.payload;
+    setLoading: (state, action: PayloadAction<{ type: keyof MedicalState['isLoading']; value: boolean }>) => {
+      state.isLoading[action.payload.type] = action.payload.value;
     },
-    setAcceptedCodesSort: (state, action: PayloadAction<'newest' | 'oldest' | 'type' | 'system'>) => {
-      state.ui.acceptedCodesSort = action.payload;
-    },
-    updateSOAPField: (state, action: PayloadAction<{ field: 'subjective' | 'objective' | 'assessment' | 'plan'; value: string }>) => {
-      const field = action.payload.field;
-      state.soapNote[field] = action.payload.value;
-    },
-    setSuggestedCodes: (state, action: PayloadAction<CodeSuggestion[]>) => {
-      state.suggestedCodes = action.payload;
-    },
-    setErrors: (state, action: PayloadAction<{ diagnosis?: string; service?: string } | undefined>) => {
+    setErrors: (state, action: PayloadAction<{
+      diagnosis?: string;
+      service?: string;
+      validation?: {
+        diagnosis?: string;
+        service?: string;
+      };
+    }>) => {
       state.errors = action.payload;
-    },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
     },
     setManualCodeInput: (state, action: PayloadAction<string>) => {
       state.manualCodeInput = action.payload;
     },
-    setManualCodeValidation: (state, action: PayloadAction<{ isValid: boolean; message: string; code?: CodeSuggestion }>) => {
+    setManualCodeValidation: (state, action: PayloadAction<{
+      isValid: boolean;
+      message: string;
+      code?: ICodeSuggestion;
+    } | null>) => {
       state.manualCodeValidation = action.payload;
     },
     clearManualCodeValidation: (state) => {
       state.manualCodeValidation = null;
     },
-    addManualCode: (state, action: PayloadAction<CodeSuggestion>) => {
+    addManualCode: (state, action: PayloadAction<ICodeSuggestion>) => {
       if (!state.manualCodes.find(c => c.id === action.payload.id)) {
         state.manualCodes.push(action.payload);
       }
@@ -136,26 +192,68 @@ const medicalSlice = createSlice({
     removeManualCode: (state, action: PayloadAction<string>) => {
       state.manualCodes = state.manualCodes.filter(c => c.id !== action.payload);
     },
+    setActiveTab: (state, action: PayloadAction<'diagnosis' | 'service'>) => {
+      state.ui.activeTab = action.payload;
+    },
+    setSearchInput: (state, action: PayloadAction<{ type: 'diagnosis' | 'service'; value: string }>) => {
+      state.ui.searchInput[action.payload.type] = action.payload.value;
+    },
+    toggleHelp: (state) => {
+      state.ui.showHelp = !state.ui.showHelp;
+    },
+    setTooltipVisibility: (state, action: PayloadAction<{ id: string; visible: boolean }>) => {
+      state.ui.tooltips[action.payload.id] = action.payload.visible;
+    },
+    resetState: () => initialState
   },
+  extraReducers: (builder) => {
+    builder.addCase(generateDiagnosisCodeSuggestions.pending, (state) => {
+      state.isLoading.diagnosisSuggestions = true;
+      state.errors = {};
+    });
+    builder.addCase(generateDiagnosisCodeSuggestions.fulfilled, (state, action) => {
+      state.isLoading.diagnosisSuggestions = false;
+      state.suggestedDiagnosisCodes = action.payload.diagnosisCodes as unknown as ICodeSuggestion[];
+    });
+    builder.addCase(generateDiagnosisCodeSuggestions.rejected, (state, action) => {
+      state.isLoading.diagnosisSuggestions = false;
+      state.errors.diagnosis = action.payload as string;
+    });
+    builder.addCase(generateServiceCodeSuggestions.pending, (state) => {
+      state.isLoading.serviceSuggestions = true;
+      state.errors = {};
+    });
+    builder.addCase(generateServiceCodeSuggestions.fulfilled, (state, action) => {
+      state.isLoading.serviceSuggestions = false;
+      state.suggestedServiceCodes = action.payload.serviceCodes as unknown as ICodeSuggestion[];
+    });
+    builder.addCase(generateServiceCodeSuggestions.rejected, (state, action) => {
+      state.isLoading.serviceSuggestions = false;
+      state.errors.service = action.payload as string;
+    });
+  }
 });
 
 export const {
+  setScreen,
   updateSOAPField,
-  updateSOAPCharCount,
-  setSuggestedCodes,
+  setSuggestedDiagnosisCodes,
   setSuggestedServiceCodes,
-  setErrors,
+  acceptCode,
+  removeCode,
+  setValidationStatus,
   setLoading,
+  setErrors,
+  setActiveTab,
+  setSearchInput,
+  toggleHelp,
+  setTooltipVisibility,
   setManualCodeInput,
   setManualCodeValidation,
   clearManualCodeValidation,
   addManualCode,
   removeManualCode,
-  setActiveTab,
-  toggleHelp,
-  setTooltipVisibility,
-  setAcceptedCodesFilter,
-  setAcceptedCodesSort,
+  resetState
 } = medicalSlice.actions;
 
 export default medicalSlice.reducer;
