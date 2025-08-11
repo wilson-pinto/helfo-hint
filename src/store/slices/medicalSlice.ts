@@ -7,7 +7,7 @@ export const generateDiagnosisCodeSuggestions = createAsyncThunk(
   'suggestions/generate/diagnosis',
   async ({ soapNote }: { soapNote: ISOAPNote }, { rejectWithValue }) => {
     try {
-      const diagnosisCodes = await networkService.diagnoses.extract(soapNote);
+      const diagnosisCodes = await networkService.diagnoses.extract(`${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`);
       return { diagnosisCodes };
     } catch (error) {
       return rejectWithValue('Failed to generate suggestions');
@@ -19,7 +19,7 @@ export const generateServiceCodeSuggestions = createAsyncThunk(
   'suggestions/generate/service',
   async ({ soapNote }: { soapNote: ISOAPNote }, { rejectWithValue }) => {
     try {
-      const serviceCodes = await networkService.services.extract(soapNote);
+      const serviceCodes = await networkService.services.extract(`${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`);
       return { serviceCodes };
     } catch (error) {
       return rejectWithValue('Failed to generate suggestions');

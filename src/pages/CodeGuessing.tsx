@@ -1,10 +1,7 @@
 import { SOAPInput } from '@/components/SOAPInput';
 import { CodeSuggestions } from '@/components/CodeSuggestions';
 import { motion } from 'framer-motion';
-import { PieChart } from 'lucide-react';
 import { useAppSelector } from '@/hooks/redux';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 
 export const CodeGuessing = () => {
 

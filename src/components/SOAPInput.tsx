@@ -9,7 +9,6 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import {  generateDiagnosisCodeSuggestions, generateServiceCodeSuggestions, updateSOAPField } from '@/store/slices/medicalSlice';
-import { generateCodeSuggestions } from '@/services/medicalCodes';
 
 interface SOAPInputProps {
   hideGenerateButton?: boolean;
@@ -54,7 +53,7 @@ const soapSections = [
 
 export const SOAPInput = ({ hideGenerateButton = false }: SOAPInputProps) => {
   const dispatch = useAppDispatch();
-  const { isLoading, soapNote } = useAppSelector((state: any) => state.medical);
+  const { isLoading, soapNote, } = useAppSelector((state: any) => state.medical);
 
   const fullNote = Object.values(soapNote).join('');
   const isSOAPEmpty = fullNote.trim().length === 0;
@@ -161,7 +160,7 @@ export const SOAPInput = ({ hideGenerateButton = false }: SOAPInputProps) => {
               )}
               <Button
                 onClick={(e) => handleSuggestCodes(e, true)}
-                disabled={isLoading.suggestions || isSOAPEmpty}
+                disabled={(isLoading.diagnosisSuggestions || isLoading.serviceSuggestions) || isSOAPEmpty}
                 className={cn(
                   "bg-medical-primary hover:bg-medical-primary-hover",
                   "text-white shadow-md transition-all duration-200",
@@ -171,7 +170,7 @@ export const SOAPInput = ({ hideGenerateButton = false }: SOAPInputProps) => {
                 size="lg"
               >
                 <Lightbulb className="h-4 w-4 mr-2" />
-                {isLoading.suggestions ? 'Analyzing SOAP Note...' : 'Generate Code Suggestions'}
+                {(isLoading.diagnosisSuggestions || isLoading.serviceSuggestions) ? 'Analyzing SOAP Note...' : 'Generate Code Suggestions'}
               </Button>
             </div>
           )}

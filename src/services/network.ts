@@ -3,7 +3,7 @@ import { diagnosisCodes, serviceCodes } from './mockData';
 import { ICodeSuggestion } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const USE_MOCK_DATA = +(import.meta.env.VITE_USE_MOCK_DATA || 1) == 1;
+const USE_MOCK_DATA = +(import.meta.env.VITE_USE_MOCK_DATA || 0) == 1;
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -20,16 +20,27 @@ export interface ApiResponse<T> {
 
 export const networkService = {
   diagnoses: {
-    extract: async (soapNote: {
-      subjective: string;
-      objective: string;
-      assessment: string;
-      plan: string;
-    }) => {
+    extract: async (soapNote: string) => {
       if (USE_MOCK_DATA) {
         return Promise.resolve(diagnosisCodes);
       }
-      return api.post<ICodeSuggestion[]>('/extract-diagnoses', soapNote);
+      return api.post('/extract-diagnoses', { soap: soapNote }).then(response => {
+        const tempDiagnosisCodes = []
+        // TODO: below is temp solution figure out better aproach
+        response.data.detailed_matches.forEach((matches: any) => {
+          matches.matches.forEach((match: any, index: number) => {
+            if (match.code) {
+              tempDiagnosisCodes.push({
+                id: `${index}`,
+                code: match.code,
+                description: match.description,
+                system: match.system
+              });
+            }
+          })
+        });
+        return tempDiagnosisCodes;
+      });
     },
 
     validate: async (code: string) => {
@@ -62,16 +73,12 @@ export const networkService = {
   },
 
   services: {
-    extract: async (soapNote: {
-      subjective: string;
-      objective: string;
-      assessment: string;
-      plan: string;
-    }) => {
+    extract: async (soapNote: string) => {
+      return Promise.resolve([])
       if (USE_MOCK_DATA) {
         return Promise.resolve(serviceCodes);
       }
-      return api.post<ICodeSuggestion[]>('/extract-services', soapNote);
+      return api.post<ICodeSuggestion[]>('/extract-services', { soap: soapNote });
     },
 
     validate: async (code: string, diagnosisCodes: string[]) => {
