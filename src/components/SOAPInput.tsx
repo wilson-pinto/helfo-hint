@@ -79,9 +79,9 @@ export const SOAPInput = ({ hideGenerateButton = false }: SOAPInputProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mb-8 border">
-        <CardHeader className="border-b">
-          <CardTitle className="flex items-center gap-2 text-medical-primary">
+      <Card className="mb-8">
+        <CardHeader className="">
+          <CardTitle className="flex items-center gap-2 text-medical-foreground/80">
             <FileText className="h-5 w-5" />
             SOAP Note
           </CardTitle>
@@ -106,7 +106,7 @@ export const SOAPInput = ({ hideGenerateButton = false }: SOAPInputProps) => {
                       {section.letter}
                     </span>
                   </div>
-                  <Label htmlFor={section.field} className="text-base font-medium">
+                  <Label htmlFor={section.field} className="text-base font-semibold text-medical-foreground/80">
                     {section.title}
                   </Label>
                 </div>
@@ -149,7 +149,7 @@ export const SOAPInput = ({ hideGenerateButton = false }: SOAPInputProps) => {
           </div>
 
           {!hideGenerateButton && (
-            <div className="flex flex-col items-center gap-2 pt-4 border-t border-medical-neutral/30">
+            <div className="flex flex-col items-end gap-2 pt-4 border-t border-medical-neutral/30">
               {fullNote.length > 0 && fullNote.length < 100 && (
                 <motion.p
                   initial={{ opacity: 0 }}

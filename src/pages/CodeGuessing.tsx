@@ -2,7 +2,7 @@ import { SOAPInput } from '@/components/SOAPInput';
 import { CodeSuggestions } from '@/components/CodeSuggestions';
 import { motion } from 'framer-motion';
 import { PieChart } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { useAppSelector } from '@/hooks/redux';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 
@@ -19,14 +19,14 @@ export const CodeGuessing = () => {
     >
       <SOAPInput />
 
-      <div className="flex items-center justify-between">
-        <p className='text-2xl font-semibold leading-none tracking-tight text-medical-primary'>
-          Suggested Diagnosis Codes
+      {/* <div className="flex items-center justify-between px-6">
+        <p className='text-2xl font-semibold leading-none tracking-tight'>
+          Suggested Codes
         </p>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" className="text-medical-primary">
+              <Button variant="ghost" size="sm" className="text-medical-primary">
                 <PieChart className="h-4 w-4 mr-1" />
                 Confidence Levels
               </Button>
@@ -49,7 +49,7 @@ export const CodeGuessing = () => {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CodeSuggestions

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, ClipboardCheck } from 'lucide-react';
 import { TScreen } from '@/types';
 import Logo from './Logo';
+import { Footer } from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ export const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-medical-surface">
+    <div className="min-h-screen bg-medical-primary/10">
       <header className="bg-white border-b border-border/50 sticky top-0 z-50">
         <div className="container mx-auto py-4">
           <div className="flex gap-4 justify-between">
@@ -68,10 +69,8 @@ export const Layout = ({ children }: LayoutProps) => {
         </AnimatePresence>
       </main>
 
-      <footer className="border-t border-border/50 py-4 mt-8">
-        <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>Medical Code Assistant © 2025</p>
-        </div>
+      <footer className="border-t border-border/50 py-4 mt-8 bg-black/85">
+       <Footer />
       </footer>
     </div>
   );

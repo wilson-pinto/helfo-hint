@@ -8,7 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useAppDispatch } from '@/hooks/redux';
-import { acceptCode } from '@/store/slices/medicalSlice';
 import { ICodeSuggestion } from '@/types';
 
 interface CodeSuggestionsProps {
@@ -123,10 +122,10 @@ export const CodeSuggestions = ({ codes, error, type }: CodeSuggestionsProps) =>
   }
 
   return (
-    <Card className='border'>
+    <Card>
       <CardHeader className="flex flex-row items-center border-b justify-between space-y-0 pb-4">
         <CardTitle>
-          <div className="flex items-center gap-2">
+          <span className="flex items-center gap-2 text-medical-foreground/80">
             {type === 'diagnosis' ? (
               <>
                 <Brain className="h-4 w-4" />
@@ -138,7 +137,7 @@ export const CodeSuggestions = ({ codes, error, type }: CodeSuggestionsProps) =>
                 Service Codes
               </>
             )}
-          </div>
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className='py-4'>
