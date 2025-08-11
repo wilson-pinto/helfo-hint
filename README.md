@@ -1,6 +1,6 @@
 # Helfo Hint
 
-Helfo Hint is a web application designed to assist with medical coding. It provides suggestions for service codes and allows for manual entry and validation of codes.
+Helfo Hint is a web application designed to assist with medical coding. It provides suggestions for service codes and allows for manual entry and validation of codes
 
 ## Technologies Used
 
