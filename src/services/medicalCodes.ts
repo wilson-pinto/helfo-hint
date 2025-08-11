@@ -1,169 +1,140 @@
+import axios from 'axios';
 import { CodeSuggestion } from '../store/slices/medicalSlice';
 
-// Mock data for Norwegian medical codes
-export const mockDiagnosisCodes = [
-  { code: 'A09', description: 'Gastroenteritis', system: 'ICD-10' as const },
-  { code: 'J06', description: 'Acute upper respiratory infection', system: 'ICD-10' as const },
-  { code: 'K59.1', description: 'Diarrhea', system: 'ICD-10' as const },
-  { code: 'R50', description: 'Fever', system: 'ICD-10' as const },
-  { code: 'D78', description: 'Digestive problem', system: 'ICPC-2' as const },
-  { code: 'R74', description: 'Upper respiratory infection', system: 'ICPC-2' as const },
-];
+const API_URL = import.meta.env.VITE_API_URL;
 
-export const mockServiceCodes = [
-  { code: '2ae', description: 'GP Consultation', system: 'HELFO' as const },
-  { code: '1ae', description: 'Emergency visit', system: 'HELFO' as const },
-  { code: '2ak', description: 'Extended consultation', system: 'HELFO' as const },
-  { code: '1be', description: 'Home visit', system: 'Tjenestekoder' as const },
-  { code: '2cd', description: 'Follow-up appointment', system: 'HELFO' as const },
-  { code: '2dd', description: 'Comprehensive assessment', system: 'HELFO' as const }
-];
+interface ApiResponse {
+  data: Array<{
+    code: string;
+    description: string;
+    system: "ICD-10" | "ICPC-2" | "HELFO" | "Tjenestekoder";
+    confidenceLevel: number;
+  }>;
+  status: number;
+  message: string;
+}
 
-// Default confidence levels for certain keywords in the note
-const defaultServiceConfidence = {
-  appointment: 65,
-  consultation: 85,
-  assessment: 75,
-  examination: 80,
-  emergency: 90,
-  urgent: 90,
-  visit: 70,
-  checkup: 65
-};
+export interface CodeSuggestionSimple {
+  code: string;
+  description: string;
+  system: "ICD-10" | "ICPC-2" | "HELFO" | "Tjenestekoder";
+}
 
 export const generateCodeSuggestions = async (soapNote: string): Promise<{
   diagnosisCodes: CodeSuggestion[];
   serviceCodes: CodeSuggestion[];
+  errors?: {
+    diagnosis?: string;
+    service?: string;
+  };
 }> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const diagnosisSuggestions: CodeSuggestion[] = [];
-  const serviceSuggestions: CodeSuggestion[] = [];
-  const lowerText = soapNote.toLowerCase();
-  
-  // Simple keyword matching for demo purposes
-  mockDiagnosisCodes.forEach((code, index) => {
-    let confidence = 0;
-    if (lowerText.includes('stomach') || lowerText.includes('nausea') || lowerText.includes('vomiting')) {
-      if (code.code === 'A09') confidence = 92;
-      if (code.code === 'K59.1') confidence = 75;
-    }
-    if (lowerText.includes('cough') || lowerText.includes('throat') || lowerText.includes('cold')) {
-      if (code.code === 'J06') confidence = 85;
-      if (code.code === 'R74') confidence = 78;
-    }
-    if (lowerText.includes('fever') || lowerText.includes('temperature')) {
-      if (code.code === 'R50') confidence = 88;
-    }
-    
-    if (confidence > 0) {
-      diagnosisSuggestions.push({
+  const diagnosisCodes: CodeSuggestion[] = [];
+  const serviceCodes: CodeSuggestion[] = [];
+  const errors: { diagnosis?: string; service?: string } = {};
+
+  try {
+    // Call for diagnosis codes
+    const diagnosisResponse = await axios.post<ApiResponse>(`${API_URL}/extract-diagnoses`, {
+      subjective: soapNote,
+      objective: soapNote,
+      assessment: soapNote,
+      plan: soapNote
+    });
+
+    if (diagnosisResponse.data.status === 1) {
+      diagnosisCodes.push(...diagnosisResponse.data.data.map((code, index) => ({
         id: `diag-${index}`,
         code: code.code,
         description: code.description,
-        type: 'diagnosis',
+        type: 'diagnosis' as const,
         system: code.system,
-        confidence,
-      });
+        confidence: code.confidenceLevel,
+      })));
+    } else {
+      errors.diagnosis = diagnosisResponse.data.message || 'Failed to get diagnosis codes';
     }
-  });
+  } catch (error) {
+    console.error('Error fetching diagnosis codes:', error);
+    errors.diagnosis = error instanceof Error ? error.message : 'Failed to fetch diagnosis codes';
+  }
 
-  // Add service code suggestions
-  mockServiceCodes.forEach((code, index) => {
-    let confidence = 0;
-    console.log(`Evaluating service code: ${code.code} - ${code.description}`, defaultServiceConfidence);
-    
-    // Use base confidence from keywords found in text
-    Object.entries(defaultServiceConfidence).forEach(([keyword, baseConfidence]) => {
-      if (lowerText.includes(keyword)) {
-        // Set initial confidence based on keyword match
-        confidence = Math.max(confidence, baseConfidence);
-        
-        // Adjust confidence based on specific code matches
-        switch (code.code) {
-          case '2ae': // GP Consultation
-            if (keyword === 'consultation' || keyword === 'appointment') {
-              confidence = Math.max(confidence, 95);
-            }
-            break;
-          case '2ak': // Extended consultation
-            if (keyword === 'assessment' || keyword === 'examination') {
-              confidence = Math.max(confidence, 85);
-            }
-            break;
-          case '1ae': // Emergency visit
-            if (keyword === 'emergency' || keyword === 'urgent') {
-              confidence = Math.max(confidence, 90);
-            }
-            break;
-          case '1be': // Home visit
-            if (keyword === 'visit' && lowerText.includes('home')) {
-              confidence = Math.max(confidence, 88);
-            }
-            break;
-          case '2cd': // Follow-up appointment
-            if (lowerText.includes('follow') && lowerText.includes('up')) {
-              confidence = Math.max(confidence, 85);
-            }
-            break;
-          case '2dd': // Comprehensive assessment
-            if (lowerText.includes('comprehensive') ||
-                (lowerText.includes('full') && keyword === 'assessment')) {
-              confidence = Math.max(confidence, 88);
-            }
-            break;
-        }
-      }
+  try {
+    // Call for service codes
+    const serviceResponse = await axios.post<ApiResponse>(`${API_URL}/extract-diagnoses`, {
+      subjective: soapNote,
+      objective: soapNote,
+      assessment: soapNote,
+      plan: soapNote
     });
 
-    console.log('Service Suggestions:', serviceSuggestions);
-
-    if (confidence > 0) {
-      serviceSuggestions.push({
+    if (serviceResponse.data.status === 1) {
+      serviceCodes.push(...serviceResponse.data.data.map((code, index) => ({
         id: `service-${index}`,
         code: code.code,
         description: code.description,
-        type: 'service',
+        type: 'service' as const,
         system: code.system,
-        confidence,
-      });
+        confidence: code.confidenceLevel,
+      })));
+    } else {
+      errors.service = serviceResponse.data.message || 'Failed to get service codes';
     }
-  });
+  } catch (error) {
+    console.error('Error fetching service codes:', error);
+    errors.service = error instanceof Error ? error.message : 'Failed to fetch service codes';
+  }
 
   return {
-    diagnosisCodes: diagnosisSuggestions.sort((a, b) => b.confidence - a.confidence),
-    serviceCodes: serviceSuggestions.sort((a, b) => b.confidence - a.confidence)
+    diagnosisCodes: diagnosisCodes.sort((a, b) => b.confidence - a.confidence),
+    serviceCodes: serviceCodes.sort((a, b) => b.confidence - a.confidence),
+    ...(Object.keys(errors).length > 0 ? { errors } : {})
   };
 };
 
-export const validateCode = async (code: string): Promise<{ isValid: boolean; message: string; code?: CodeSuggestion }> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  const allCodes = [...mockDiagnosisCodes, ...mockServiceCodes];
-  const foundCode = allCodes.find(c => c.code.toLowerCase() === code.toLowerCase());
-  
-  if (foundCode) {
-    const codeType = mockServiceCodes.some(sc => sc.code === foundCode.code) ? 'service' : 'diagnosis';
-    const validatedCode: CodeSuggestion = {
-      id: `manual-${Date.now()}`,
-      code: foundCode.code,
-      description: foundCode.description,
-      type: codeType,
-      system: foundCode.system,
-      confidence: 100,
-    };
+export const getSuggestions = async (system: "ICD-10" | "ICPC-2" | "HELFO" | "Tjenestekoder"): Promise<CodeSuggestionSimple[]> => {
+  try {
+    const response = await axios.get<{ data: CodeSuggestionSimple[] }>(`${API_URL}/codes/${system}`);
+    return response.data.data;
+  } catch (error) {
+    console.error(`Error fetching ${system} suggestions:`, error);
+    return [];
+  }
+};
+
+export const validateCode = async (code: string): Promise<{ 
+  isValid: boolean; 
+  message: string; 
+  code?: CodeSuggestion;
+  error?: string;
+}> => {
+  try {
+    const response = await axios.get(`${API_URL}/validate-code/${code}`);
     
-    return {
-      isValid: true,
-      message: `Valid ${foundCode.system} code: ${foundCode.description}`,
-      code: validatedCode,
-    };
-  } else {
+    if (response.data.isValid) {
+      return {
+        isValid: true,
+        message: `Valid ${response.data.code.system} code: ${response.data.code.description}`,
+        code: {
+          id: `manual-${Date.now()}`,
+          code: response.data.code.code,
+          description: response.data.code.description,
+          type: 'diagnosis' as const,
+          system: response.data.code.system,
+          confidence: 100,
+        },
+      };
+    }
+
     return {
       isValid: false,
-      message: 'Code not found in Norwegian medical code systems',
+      message: response.data.message || 'Code not found in medical code systems',
+    };
+  } catch (error) {
+    console.error('Error validating code:', error);
+    return {
+      isValid: false,
+      message: 'Error validating code',
+      error: error instanceof Error ? error.message : 'Failed to validate code'
     };
   }
 };

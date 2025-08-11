@@ -1,0 +1,24 @@
+import '@testing-library/jest-dom';
+
+// Mock framer-motion
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  },
+  AnimatePresence: ({ children }: any) => children,
+}));
+
+// Mock matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
