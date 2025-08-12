@@ -2,12 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Copy, Check, Activity, AlertCircle, Brain } from 'lucide-react';
+import { Copy, Check, Activity, AlertCircle, Brain, ShieldQuestion } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useAppDispatch } from '@/hooks/redux';
 import { ICodeSuggestion } from '@/types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface CodeSuggestionsProps {
   codes: ICodeSuggestion[];
@@ -81,26 +82,18 @@ export const CodeSuggestions = ({ codes, error, type }: CodeSuggestionsProps) =>
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                {/* <TooltipProvider>
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center gap-2 cursor-help">
-                        <div className={`w-3 h-3 rounded-full ${getConfidenceColor(code.confidence)}`} />
-                        <span className="text-sm font-medium">{code.confidence}%</span>
-                        <span className="text-xs text-muted-foreground">
-                          {getConfidenceText(code.confidence)}
-                        </span>
-                      </div>
+                      <ShieldQuestion className="h-4 w-4" />
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent className='max-w-xs p-4'>
                       <p className="text-sm">
-                        {code.confidence >= 85 ? 'High confidence based on clear indicators' :
-                          code.confidence >= 70 ? 'Moderate confidence based on partial match' :
-                            'Lower confidence suggestion, please review'}
+                        {code.reason}
                       </p>
                     </TooltipContent>
                   </Tooltip>
-                </TooltipProvider> */}
+                </TooltipProvider>
                 <Button
                   size="sm"
                   variant="outline"

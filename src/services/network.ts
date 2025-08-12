@@ -34,7 +34,8 @@ export const networkService = {
                 id: `${index}`,
                 code: match.code,
                 description: match.description,
-                system: match.system
+                system: match.system,
+                reason: match.reason
               });
             }
           })

@@ -18,6 +18,7 @@ export interface ICodeSuggestion {
   id: string;
   code: string;
   description: string;
+  reason: string
   type: 'diagnosis' | 'service';
   system: 'ICD-10' | 'ICPC-2' | 'HELFO' | 'Tjenestekoder';
   confidence: number;
