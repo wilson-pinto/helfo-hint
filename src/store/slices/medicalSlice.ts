@@ -27,6 +27,18 @@ export const generateServiceCodeSuggestions = createAsyncThunk(
   }
 );
 
+export const validateServiceCodes = createAsyncThunk(
+  'validate/service',
+  async ({ soapNote, inputCodes }: { soapNote: ISOAPNote, inputCodes: string[] }, { rejectWithValue }) => {
+    try {
+      const serviceCodes = await networkService.services.validate(`${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`, inputCodes);
+      return { serviceCodes };
+    } catch (error) {
+      return rejectWithValue('Failed to generate suggestions');
+    }
+  }
+);
+
 interface MedicalState {
   currentScreen: TScreen;
   soapNote: ISOAPNote;
@@ -50,7 +62,7 @@ interface MedicalState {
     };
   };
   manualCodeInput: string;
-  manualCodes: ICodeSuggestion[];
+  validateServiceCodes: ICodeSuggestion[];
   manualCodeValidation: {
     isValid?: boolean;
     message?: string;
@@ -70,15 +82,15 @@ interface MedicalState {
 const initialState: MedicalState = {
   currentScreen: 'code-guessing',
   soapNote: {
-    subjective: "28‑year‑old male with 12‑hour onset of sharp RLQ abdominal pain (8/10), worsened by movement and coughing; nausea, two vomiting episodes, decreased appetite; no fever or bowel changes; no past medical history.",
-    objective: "Temp 99.8°F, BP 128/76 mmHg, HR 92 bpm, RR 18. Abdomen soft with RLQ tenderness, guarding, positive McBurney’s. WBC 14.5K. CT shows inflamed appendix with fat stranding.",
-    assessment: "Uncomplicated acute appendicitis supported by clinical signs, labs, and imaging.",
-    plan: "Admit for laparoscopic appendectomy; NPO, IV fluids LR 100 mL/hr, preop antibiotics cefotetan 1 g; obtain consent, schedule surgery; DVT prophylaxis; postop education; follow-up in 2 weeks for suture removal.",
+    subjective: "",
+    objective: "",
+    assessment: "",
+    plan: "",
     characterCount: {
-      subjective: 323,
-      objective: 242,
-      assessment: 84,
-      plan: 286
+      subjective: 0,
+      objective: 0,
+      assessment: 0,
+      plan: 0
     }
   },
   suggestedDiagnosisCodes: [],
@@ -94,7 +106,7 @@ const initialState: MedicalState = {
   },
   errors: {},
   manualCodeInput: '',
-  manualCodes: [],
+  validateServiceCodes: [],
   manualCodeValidation: null,
   ui: {
     activeTab: 'diagnosis',
@@ -148,15 +160,15 @@ const medicalSlice = createSlice({
         compatibleWithDiagnoses?: boolean;
       };
     }>) => {
-      const { code, type, status } = action.payload;
-      const targetArray = type === 'diagnosis'
-        ? state.acceptedCodes.diagnosis
-        : state.acceptedCodes.service;
+      // const { code, type, status } = action.payload;
+      // const targetArray = type === 'diagnosis'
+      //   ? state.acceptedCodes.diagnosis
+      //   : state.acceptedCodes.service;
 
-      const codeIndex = targetArray.findIndex(c => c.code === code);
-      if (codeIndex !== -1) {
-        targetArray[codeIndex].validationStatus = status;
-      }
+      // const codeIndex = targetArray.findIndex(c => c.code === code);
+      // if (codeIndex !== -1) {
+      //   targetArray[codeIndex].validationStatus = status;
+      // }
     },
     setLoading: (state, action: PayloadAction<{ type: keyof MedicalState['isLoading']; value: boolean }>) => {
       state.isLoading[action.payload.type] = action.payload.value;
@@ -184,13 +196,14 @@ const medicalSlice = createSlice({
     clearManualCodeValidation: (state) => {
       state.manualCodeValidation = null;
     },
-    addManualCode: (state, action: PayloadAction<ICodeSuggestion>) => {
-      if (!state.manualCodes.find(c => c.id === action.payload.id)) {
-        state.manualCodes.push(action.payload);
-      }
+    addManualCode: (state, action: PayloadAction<string>) => {
+      console.log(action.payload)
+      // if (!state.validateServiceCodes.find(c => c === action.payload as string)) {
+      //   state.validateServiceCodes.push(action.payload as string);
+      // }
     },
     removeManualCode: (state, action: PayloadAction<string>) => {
-      state.manualCodes = state.manualCodes.filter(c => c.id !== action.payload);
+      state.validateServiceCodes = state.validateServiceCodes.filter(c => c.id !== action.payload);
     },
     setActiveTab: (state, action: PayloadAction<'diagnosis' | 'service'>) => {
       state.ui.activeTab = action.payload;
@@ -230,6 +243,20 @@ const medicalSlice = createSlice({
     builder.addCase(generateServiceCodeSuggestions.rejected, (state, action) => {
       state.isLoading.serviceSuggestions = false;
       state.errors.service = action.payload as string;
+    });
+    builder.addCase(validateServiceCodes.pending, (state) => {
+      state.isLoading.validation = true;
+      state.errors = {};
+    });
+    builder.addCase(validateServiceCodes.fulfilled, (state, action) => {
+      console.log(action.payload);
+
+      state.isLoading.validation = false;
+      state.acceptedCodes.service = action.payload.serviceCodes;
+    });
+    builder.addCase(validateServiceCodes.rejected, (state, action) => {
+      state.isLoading.validation = false;
+      // state.errors.validation = action.payload as string;
     });
   }
 });

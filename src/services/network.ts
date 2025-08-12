@@ -81,26 +81,35 @@ export const networkService = {
       return api.post<ICodeSuggestion[]>('/extract-services', { soap: soapNote });
     },
 
-    validate: async (code: string, diagnosisCodes: string[]) => {
-      if (USE_MOCK_DATA) {
-        const mockCode = serviceCodes.find(c => c.code === code);
-        return Promise.resolve({
-          data: {
-            status: 1,
-            data: {
-              isValid: true,
-              compatibleWithDiagnoses: true,
-              message: mockCode ? `Valid service code: ${mockCode.description}` : 'Valid service code',
-            },
-            message: 'Success',
-          },
+    validate: async (soap: string, serviceCodes: string[]) => {
+      // if (USE_MOCK_DATA) {
+      //   // const mockCode = serviceCodes.find(c => c.code === code);
+      //   return Promise.resolve({
+      //     data: {
+      //       status: 1,
+      //       data: {
+      //         isValid: true,
+      //         compatibleWithDiagnoses: true,
+      //         message: mockCode ? `Valid service code: ${mockCode.description}` : 'Valid service code',
+      //       },
+      //       message: 'Success',
+      //     },
+      //   });
+      // }
+      return api.post<any>(`/v2/check-note-requirements`, { soap, service_codes: serviceCodes })
+        .then((response) => {
+          return response.data?.results?.map(result =>{
+            return {
+              id: `service-${result.service_code}`,
+              code: result.service_code,
+              validationStatus: {
+                compliance: result.compliance,
+                // compatibleWithDiagnoses: result.compatible_with_diagnoses,
+                message: result.suggestions?.join(", ") || "No suggestions",
+              }
+            } as ICodeSuggestion;
+          })
         });
-      }
-      return api.post<ApiResponse<{
-        isValid: boolean;
-        compatibleWithDiagnoses: boolean;
-        message: string;
-      }>>(`/validate-service/${code}`, { diagnosisCodes });
     }
   },
 

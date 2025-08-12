@@ -23,7 +23,7 @@ export interface ICodeSuggestion {
   confidence: number;
   accepted?: boolean;
   validationStatus?: {
-    isValid: boolean;
+    compliance: "fail" | "pass" | "warn";
     message: string;
     compatibleWithDiagnoses?: boolean;
   };

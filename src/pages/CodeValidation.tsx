@@ -47,44 +47,19 @@ export const CodeValidation = () => {
     }
   };
 
-  const handleValidateServiceCodes = async () => {
-    dispatch(setLoading({ type: 'validation', value: true }));
-
-    try {
-      for (const code of acceptedCodes.service) {
-        const result = await networkService.services.validate(
-          code.code,
-          acceptedCodes.diagnosis.map(d => d.code)
-        );
-        
-        if (result.data.status === 1) {
-          dispatch(setValidationStatus({
-            code: code.code,
-            type: 'service',
-            status: {
-              isValid: result.data.data.isValid,
-              message: result.data.data.message,
-              compatibleWithDiagnoses: result.data.data.compatibleWithDiagnoses
-            }
-          }));
-        } else {
-          dispatch(setValidationStatus({
-            code: code.code,
-            type: 'service',
-            status: {
-              isValid: false,
-              message: result.data.message || 'Invalid code',
-              compatibleWithDiagnoses: false
-            }
-          }));
-        }
-      }
-    } catch (error) {
-      console.error('Validation error:', error);
-    } finally {
-      dispatch(setLoading({ type: 'validation', value: false }));
+  const getValidationStatusColor = (compliance) =>{
+    if(compliance === "pass"){
+         return "border-green-500 text-green-700 bg-green-50"
     }
-  };
+
+    if(compliance === "fail"){
+         return "border-red-500 text-red-700 bg-red-50"
+    }
+
+    if(compliance === "warn"){
+         return "border-yellow-500 text-yellow-700 bg-yellow-50"
+    }
+  }
 
   const renderValidationStatus = (code: typeof acceptedCodes.diagnosis[0] | typeof acceptedCodes.service[0]) => {
     if (!code.validationStatus) return null;
@@ -93,20 +68,20 @@ export const CodeValidation = () => {
       <Alert 
         className={cn(
           "mt-2",
-          code.validationStatus.isValid ? "border-green-500 text-green-700 bg-green-50" : "border-red-500 text-red-700 bg-red-50"
+          getValidationStatusColor(code.validationStatus.compliance)
         )}
       >
-        {code.validationStatus.isValid ? (
+        {code.validationStatus.compliance === "pass" ? (
           <CheckCircle className="h-4 w-4" />
         ) : (
           <AlertCircle className="h-4 w-4" />
         )}
         <AlertDescription>{code.validationStatus.message}</AlertDescription>
-        {code.validationStatus.compatibleWithDiagnoses === false && (
+        {/* {code.validationStatus.compatibleWithDiagnoses === false && (
           <AlertDescription className="mt-1 text-amber-600">
             This service code may not be compatible with the selected diagnoses.
           </AlertDescription>
-        )}
+        )} */}
       </Alert>
     );
   };
@@ -122,7 +97,7 @@ export const CodeValidation = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Diagnosis Codes Panel */}
-        <Card>
+        {/* <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle>Diagnosis Codes</CardTitle>
             <Button
@@ -159,21 +134,12 @@ export const CodeValidation = () => {
               </div>
             </AnimatePresence>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Service Codes Panel */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>Service Codes</CardTitle>
-            <Button
-              onClick={handleValidateServiceCodes}
-              disabled={isLoading.validation || acceptedCodes.service.length === 0}
-              className="bg-medical-primary hover:bg-medical-primary/90"
-              size="sm"
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              {isLoading.validation ? 'Validating...' : 'Validate Services'}
-            </Button>
+            <CardTitle>Validate Service Codes</CardTitle>            
           </CardHeader>
           <CardContent>
             <ManualCodeEntry type="service" />
