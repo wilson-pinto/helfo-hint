@@ -51,7 +51,7 @@ interface MedicalState {
   isLoading: {
     diagnosisSuggestions: boolean;
     serviceSuggestions: boolean;
-    validation: boolean;
+    servicecodeValidation: boolean;
   };
   errors: {
     diagnosis?: string;
@@ -102,7 +102,7 @@ const initialState: MedicalState = {
   isLoading: {
     diagnosisSuggestions: false,
     serviceSuggestions: false,
-    validation: false
+    servicecodeValidation: false
   },
   errors: {},
   manualCodeInput: '',
@@ -245,17 +245,16 @@ const medicalSlice = createSlice({
       state.errors.service = action.payload as string;
     });
     builder.addCase(validateServiceCodes.pending, (state) => {
-      state.isLoading.validation = true;
+       state.acceptedCodes.service = []
+      state.isLoading.servicecodeValidation = true;
       state.errors = {};
     });
     builder.addCase(validateServiceCodes.fulfilled, (state, action) => {
-      console.log(action.payload);
-
-      state.isLoading.validation = false;
+      state.isLoading.servicecodeValidation = false;
       state.acceptedCodes.service = action.payload.serviceCodes;
     });
     builder.addCase(validateServiceCodes.rejected, (state, action) => {
-      state.isLoading.validation = false;
+      state.isLoading.servicecodeValidation = false;
       // state.errors.validation = action.payload as string;
     });
   }
