@@ -8,11 +8,23 @@ import Agentic from './pages/Agentic';
 function App() {
   const currentScreen = useAppSelector((state) => state.medical.currentScreen);
 
+  const getComponent = () => {
+    if (currentScreen === 'code-guessing') {
+      return <CodeGuessing />;
+    }
+    if (currentScreen === 'code-validation') {
+      return <CodeValidation />;
+    }
+    if (currentScreen === 'agentic') {
+      return <Agentic />;
+    }
+    return <></>
+  }
+  
   return (
     <>
       <Layout>
-        <Agentic />
-        {/* {currentScreen === 'code-guessing' ? <CodeGuessing /> : <CodeValidation />} */}
+        {getComponent()}
       </Layout>
       <Toaster />
     </>
