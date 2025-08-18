@@ -2,6 +2,7 @@ import { SOAPInput } from '@/components/SOAPInput';
 import { CodeSuggestions } from '@/components/CodeSuggestions';
 import { motion } from 'framer-motion';
 import { useAppSelector } from '@/hooks/redux';
+import { ServiceCodeSuggestions } from '@/components/ServiceCodeSuggestions';
 
 export const CodeGuessing = () => {
 
@@ -53,10 +54,10 @@ export const CodeGuessing = () => {
           suggestions={suggestedDiagnosisCodes}
           error={errors?.diagnosis}
         />
-        {/* <CodeSuggestions
+        <ServiceCodeSuggestions
           suggestions={suggestedServiceCodes}
           error={errors?.service}
-        /> */}
+        />
       </div>
     </motion.div>
   );

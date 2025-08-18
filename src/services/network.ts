@@ -61,12 +61,24 @@ export const networkService = {
   },
 
   services: {
+
     extract: async (soapNote: string) => {
-      return Promise.resolve([])
+
       if (USE_MOCK_DATA) {
         return Promise.resolve(serviceCodes);
       }
-      return api.post<ICodeSuggestion[]>('/extract-services', { soap: soapNote });
+      const response = await api.post('/suggest-service-codes', {
+        "query": soapNote,
+        "top_k": 5,
+        "session_id": "wqqweqeqw"
+      });
+
+      return response.data.decision.map(code => {
+        return {
+          code: code.code,
+          description: code.reason,
+        } as ICodeSuggestion
+      })
     },
 
     validate: async (soap: string, serviceCodes: string[]) => {

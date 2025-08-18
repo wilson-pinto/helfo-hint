@@ -19,7 +19,10 @@ export const generateServiceCodeSuggestions = createAsyncThunk(
   'suggestions/generate/service',
   async ({ soapNote }: { soapNote: ISOAPNote }, { rejectWithValue }) => {
     try {
+      console.log({soapNote});
+      
       const serviceCodes = await networkService.services.extract(`${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`);
+      console.log({ serviceCodes });
       return { serviceCodes };
     } catch (error) {
       return rejectWithValue('Failed to generate suggestions');
@@ -245,7 +248,7 @@ const medicalSlice = createSlice({
       state.errors.service = action.payload as string;
     });
     builder.addCase(validateServiceCodes.pending, (state) => {
-       state.acceptedCodes.service = []
+      state.acceptedCodes.service = []
       state.isLoading.servicecodeValidation = true;
       state.errors = {};
     });
