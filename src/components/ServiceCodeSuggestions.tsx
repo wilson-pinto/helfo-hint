@@ -6,7 +6,6 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { AlertCircle, Brain, HelpCircle } from "lucide-react";
 import { motion } from 'framer-motion';
 import { Badge } from "./ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
