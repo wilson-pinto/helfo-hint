@@ -29,3 +29,15 @@ export interface ICodeSuggestion {
     compatibleWithDiagnoses?: boolean;
   };
 }
+
+export interface ICodeMatch {
+  code: string | null;
+  description: string | null;
+  reason: string;
+  similarity: number | null;
+}
+
+export interface IDiagnosisCodeSuggestion {
+  concept: string;
+  matches: ICodeMatch[];
+}

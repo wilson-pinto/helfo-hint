@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { diagnosisCodes, serviceCodes } from './mockData';
-import { ICodeSuggestion } from '@/types';
+import { ICodeSuggestion, IDiagnosisCodeSuggestion } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const USE_MOCK_DATA = +(import.meta.env.VITE_USE_MOCK_DATA || 0) == 1;
@@ -27,20 +27,7 @@ export const networkService = {
       return api.post('/extract-diagnoses', { soap: soapNote }).then(response => {
         const tempDiagnosisCodes = []
         // TODO: below is temp solution figure out better aproach
-        response.data.detailed_matches.forEach((matches: any) => {
-          matches.matches.forEach((match: any, index: number) => {
-            if (match.code) {
-              tempDiagnosisCodes.push({
-                id: `${index}`,
-                code: match.code,
-                description: match.description,
-                system: match.system,
-                reason: match.reason
-              });
-            }
-          })
-        });
-        return tempDiagnosisCodes;
+        return response.data.detailed_matches as IDiagnosisCodeSuggestion
       });
     },
 
@@ -99,7 +86,7 @@ export const networkService = {
       // }
       return api.post<any>(`/v2/check-note-requirements`, { soap, service_codes: serviceCodes })
         .then((response) => {
-          return response.data?.results?.map(result =>{
+          return response.data?.results?.map(result => {
             return {
               id: `service-${result.service_code}`,
               code: result.service_code,

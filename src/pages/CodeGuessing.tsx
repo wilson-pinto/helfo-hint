@@ -50,15 +50,13 @@ export const CodeGuessing = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CodeSuggestions
-          type='diagnosis'
-          codes={suggestedDiagnosisCodes}
+          suggestions={suggestedDiagnosisCodes}
           error={errors?.diagnosis}
         />
-        <CodeSuggestions
-          type='service'
-          codes={suggestedServiceCodes}
+        {/* <CodeSuggestions
+          suggestions={suggestedServiceCodes}
           error={errors?.service}
-        />
+        /> */}
       </div>
     </motion.div>
   );

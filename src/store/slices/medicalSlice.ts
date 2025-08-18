@@ -1,5 +1,5 @@
 import { networkService } from '@/services/network';
-import { ICodeSuggestion, ISOAPNote, TScreen } from '@/types';
+import { ICodeSuggestion, IDiagnosisCodeSuggestion, ISOAPNote, TScreen } from '@/types';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 
@@ -42,7 +42,7 @@ export const validateServiceCodes = createAsyncThunk(
 interface MedicalState {
   currentScreen: TScreen;
   soapNote: ISOAPNote;
-  suggestedDiagnosisCodes: ICodeSuggestion[];
+  suggestedDiagnosisCodes: IDiagnosisCodeSuggestion[];
   suggestedServiceCodes: ICodeSuggestion[];
   acceptedCodes: {
     diagnosis: ICodeSuggestion[];
@@ -131,7 +131,7 @@ const medicalSlice = createSlice({
       state.soapNote[field] = value;
       state.soapNote.characterCount[field] = value.length;
     },
-    setSuggestedDiagnosisCodes: (state, action: PayloadAction<ICodeSuggestion[]>) => {
+    setSuggestedDiagnosisCodes: (state, action: PayloadAction<IDiagnosisCodeSuggestion[]>) => {
       state.suggestedDiagnosisCodes = action.payload;
     },
     setSuggestedServiceCodes: (state, action: PayloadAction<ICodeSuggestion[]>) => {
@@ -226,7 +226,7 @@ const medicalSlice = createSlice({
     });
     builder.addCase(generateDiagnosisCodeSuggestions.fulfilled, (state, action) => {
       state.isLoading.diagnosisSuggestions = false;
-      state.suggestedDiagnosisCodes = action.payload.diagnosisCodes as unknown as ICodeSuggestion[];
+      state.suggestedDiagnosisCodes = action.payload.diagnosisCodes as unknown as IDiagnosisCodeSuggestion[];
     });
     builder.addCase(generateDiagnosisCodeSuggestions.rejected, (state, action) => {
       state.isLoading.diagnosisSuggestions = false;
