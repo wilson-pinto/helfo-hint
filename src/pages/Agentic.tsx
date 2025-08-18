@@ -164,11 +164,64 @@ function Agentic() {
 
     // Render
     return (
-        <div className="bg-background text-foreground antialiased min-h-screen">
+        <div className="bg-background text-foreground antialiased">
             <div className="container mx-auto p-6">
                 <p className="text-2xl font-semibold leading-none tracking-tight px-10">Agentic AI</p>
                 <div className="flex gap-8">
-                    {/* LEFT */}
+                    {/* Timeline LEFT */}
+                    <div className="w-[320px] max-h-[calc(70vh-4rem)] overflow-y-auto">
+                        <Card className="bg-card p-4 space-y-3 border-e">
+                            <CardHeader>
+                                <h3 className="font-semibold mb-2 text-gray-900">� Workflow Timeline</h3>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4 text-xs">
+                                    {!allStages.length ? (
+                                        <div className="py-6 text-center text-gray-900">Waiting...</div>
+                                    ) : (
+                                        allStages.map((s, i) => {
+                                            const c = stageConfig[s.name];
+                                            return (
+                                                <React.Fragment key={s.name}>
+                                                    <Card className={`p-3 flex space-x-3 border-b rounded ${s.status === "current"
+                                                        ? "bg-accent/20"
+                                                        : s.status === "completed"
+                                                            ? "bg-success/20"
+                                                            : "bg-subtle/20"
+                                                        }`}>
+                                                        <CardContent className="flex items-center space-x-3 p-0">
+                                                            <span>{c.icon}</span>
+                                                            <div className="flex-1">
+                                                                <div className="text-sm font-bold text-gray-900">{c.name}</div>
+                                                                <div className="text-[11px] text-gray-900">{c.description}</div>
+                                                            </div>
+                                                            <div className="text-gray-900">
+                                                                {s.status === "current"
+                                                                    ? "⏳"
+                                                                    : s.status === "completed"
+                                                                        ? "✅"
+                                                                        : ""}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                    {/* {i < allStages.length - 1 && (
+                                                        <div
+                                                            className={`h-2 rounded-full my-1 ${allStages[i + 1].status !== "pending"
+                                                                ? "bg-accent"
+                                                                : "bg-muted/40"
+                                                                }`}
+                                                        ></div>
+                                                    )} */}
+                                                </React.Fragment>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Workflow RIGHT */}
                     <div className="flex-1 space-y-6">
                         {/* Input Form */}
                         {!aiThinking && !showQuestionForm && !showFinalDocument && (
@@ -301,59 +354,6 @@ function Agentic() {
                                 </CardContent>
                             </Card>
                         )}
-                    </div>
-
-                    {/* RIGHT: Workflow Timeline */}
-                    <div className="">
-                        <Card className="bg-card p-4 space-y-3 border-s">
-                            <CardHeader>
-                                <h3 className="font-semibold mb-2 text-gray-900">📊 Workflow Timeline</h3>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4 text-xs">
-                                    {!allStages.length ? (
-                                        <div className="py-6 text-center text-gray-900">Waiting...</div>
-                                    ) : (
-                                        allStages.map((s, i) => {
-                                            const c = stageConfig[s.name];
-                                            return (
-                                                <React.Fragment key={s.name}>
-                                                    <Card className={`p-3 flex space-x-3 rounded ${s.status === "current"
-                                                        ? "bg-accent/20"
-                                                        : s.status === "completed"
-                                                            ? "bg-success/20"
-                                                            : "bg-subtle/20"
-                                                        }`}>
-                                                        <CardContent className="flex items-center space-x-3 p-0">
-                                                            <span>{c.icon}</span>
-                                                            <div className="flex-1">
-                                                                <div className="text-sm font-bold text-gray-900">{c.name}</div>
-                                                                <div className="text-[11px] text-gray-900">{c.description}</div>
-                                                            </div>
-                                                            <div className="text-gray-900">
-                                                                {s.status === "current"
-                                                                    ? "⏳"
-                                                                    : s.status === "completed"
-                                                                        ? "✅"
-                                                                        : ""}
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
-                                                    {i < allStages.length - 1 && (
-                                                        <div
-                                                            className={`h-2 rounded-full my-1 ${allStages[i + 1].status !== "pending"
-                                                                ? "bg-accent"
-                                                                : "bg-muted/40"
-                                                                }`}
-                                                        ></div>
-                                                    )}
-                                                </React.Fragment>
-                                            );
-                                        })
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
                     </div>
                 </div>
             </div>

@@ -15,7 +15,7 @@ export const CodeValidation = () => {
   const { acceptedCodes, isLoading } = useAppSelector((state) => state.medical);
 
   const handleValidateDiagnosisCodes = async () => {
-    dispatch(setLoading({ type: 'validation', value: true }));
+    dispatch(setLoading({ type: 'servicecodeValidation', value: true }));
 
     try {
       for (const code of acceptedCodes.diagnosis) {
@@ -43,7 +43,7 @@ export const CodeValidation = () => {
     } catch (error) {
       console.error('Validation error:', error);
     } finally {
-      dispatch(setLoading({ type: 'validation', value: false }));
+      dispatch(setLoading({ type: 'servicecodeValidation', value: false }));
     }
   };
 
