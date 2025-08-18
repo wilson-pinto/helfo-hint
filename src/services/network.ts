@@ -76,7 +76,8 @@ export const networkService = {
       return response.data.decision.map(code => {
         return {
           code: code.code,
-          description: code.reason,
+          description: code.description,
+          reason: code.reason
         } as ICodeSuggestion
       })
     },

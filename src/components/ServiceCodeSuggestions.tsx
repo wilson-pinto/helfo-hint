@@ -71,10 +71,26 @@ export const ServiceCodeSuggestions = ({ suggestions, error }: CodeSuggestionsPr
             transition={{ duration: 0.2 }}
             className="flex items-center justify-between p-3 border rounded-lg transition-colors hover:bg-medical-neutral bg-medical-surface"
           >
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
               <Badge variant="outline" className="font-mono">
                 {code.code}
               </Badge>
+              <div className="flex">
+                <Popover>
+                <PopoverTrigger asChild>
+                  <p className="text-ellipsis line-clamp-1">
+                    {code.reason}
+                  </p>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <div className="space-y-2">
+                    <p className="p-4">
+                      {code.reason}
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              </div>
             </div>
             <div className="flex items-center">
               <Popover>
