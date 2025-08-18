@@ -1,4 +1,4 @@
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useToast } from "@/hooks/use-toast";
 import { ICodeSuggestion } from "@/types";
 import { useState } from "react";
@@ -9,6 +9,8 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { generateServiceCodeSuggestions } from "@/store/slices/medicalSlice";
+import Soap from "./Soap";
 
 interface CodeSuggestionsProps {
   suggestions: ICodeSuggestion[];
@@ -19,6 +21,13 @@ export const ServiceCodeSuggestions = ({ suggestions, error }: CodeSuggestionsPr
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { toast } = useToast();
   const dispatch = useAppDispatch();
+
+  const { isLoading, soapString } = useAppSelector((state) => state.medical);
+
+   const handleSubmit = () => {
+      dispatch(generateServiceCodeSuggestions(soapString));
+    }
+  
 
   const handleCopy = (code: string) => {
     if (!code) return;
@@ -76,19 +85,19 @@ export const ServiceCodeSuggestions = ({ suggestions, error }: CodeSuggestionsPr
               </Badge>
               <div className="flex">
                 <Popover>
-                <PopoverTrigger asChild>
-                  <p className="text-ellipsis line-clamp-1">
-                    {code.reason}
-                  </p>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <div className="space-y-2">
-                    <p className="p-4">
+                  <PopoverTrigger asChild>
+                    <p className="text-ellipsis line-clamp-1">
                       {code.reason}
                     </p>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <div className="space-y-2">
+                      <p className="p-4">
+                        {code.reason}
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div className="flex items-center">
@@ -119,11 +128,12 @@ export const ServiceCodeSuggestions = ({ suggestions, error }: CodeSuggestionsPr
         <CardTitle>
           <span className="flex items-center gap-2 text-medical-foreground/80">
             <Brain className="h-4 w-4" />
-            Code Suggestions
+           Service Code Suggestions
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className='py-4'>
+        <Soap loading={isLoading.serviceSuggestions} onButtonClick={handleSubmit} buttonText="Generate Suggestions" />
         {cardContent()}
       </CardContent>
     </Card>

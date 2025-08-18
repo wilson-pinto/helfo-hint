@@ -4,23 +4,34 @@ import { CodeGuessing } from '@/pages/CodeGuessing';
 import { CodeValidation } from '@/pages/CodeValidation';
 import { Toaster } from '@/components/ui/toaster';
 import Agentic from './pages/Agentic';
+import { CodeSuggestions } from './components/CodeSuggestions';
+import { ServiceCodeSuggestions } from './components/ServiceCodeSuggestions';
 
 function App() {
-  const currentScreen = useAppSelector((state) => state.medical.currentScreen);
+  const { currentScreen, suggestedDiagnosisCodes, suggestedServiceCodes, errors } = useAppSelector((state) => state.medical);
 
   const getComponent = () => {
-    if (currentScreen === 'code-guessing') {
-      return <CodeGuessing />;
+    if (currentScreen === 'guess-diagnosis-code') {
+      return <CodeSuggestions
+        suggestions={suggestedDiagnosisCodes}
+        error={errors?.diagnosis}
+      />
     }
-    if (currentScreen === 'code-validation') {
+    if (currentScreen === 'validate-service-code') {
       return <CodeValidation />;
+    }
+    if (currentScreen === 'guess-service-code') {
+      return <ServiceCodeSuggestions
+        suggestions={suggestedServiceCodes}
+        error={errors?.service}
+      />
     }
     if (currentScreen === 'agentic') {
       return <Agentic />;
     }
     return <></>
   }
-  
+
   return (
     <>
       <Layout>

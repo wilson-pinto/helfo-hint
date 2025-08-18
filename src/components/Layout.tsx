@@ -32,20 +32,27 @@ export const Layout = ({ children }: LayoutProps) => {
               value={currentScreen}
               onValueChange={(value) => handleScreenChange(value as TScreen)}
             >
-              <TabsList className="grid grid-cols-3 w-full">
+              <TabsList className="grid grid-cols-4 w-full">
                 <TabsTrigger
-                  value="code-guessing"
+                  value="guess-diagnosis-code"
                   className="flex items-center gap-2"
                 >
                   <Brain className="h-4 w-4" />
-                  Code Guessing
+                  Guess Diagnosis Code
                 </TabsTrigger>
                 <TabsTrigger
-                  value="code-validation"
+                  value="guess-service-code"
                   className="flex items-center gap-2"
                 >
                   <ClipboardCheck className="h-4 w-4" />
-                  Code Validation
+                  Guess Service Code
+                </TabsTrigger>
+                <TabsTrigger
+                  value="validate-service-code"
+                  className="flex items-center gap-2"
+                >
+                  <ClipboardCheck className="h-4 w-4" />
+                  Validate Service Code
                 </TabsTrigger>
                 <TabsTrigger
                   value="agentic"

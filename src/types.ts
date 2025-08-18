@@ -1,5 +1,5 @@
 
-export type TScreen = 'code-guessing' | 'code-validation' | 'agentic';
+export type TScreen = 'guess-diagnosis-code' | 'guess-service-code' | 'validate-service-code' | 'agentic';
 
 export interface ISOAPNote {
   subjective: string;

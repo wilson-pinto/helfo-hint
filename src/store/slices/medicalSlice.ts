@@ -5,9 +5,9 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export const generateDiagnosisCodeSuggestions = createAsyncThunk(
   'suggestions/generate/diagnosis',
-  async ({ soapNote }: { soapNote: ISOAPNote }, { rejectWithValue }) => {
+  async (soapString: string, { rejectWithValue }) => {
     try {
-      const diagnosisCodes = await networkService.diagnoses.extract(`${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`);
+      const diagnosisCodes = await networkService.diagnoses.extract(soapString);
       return { diagnosisCodes };
     } catch (error) {
       return rejectWithValue('Failed to generate suggestions');
@@ -17,11 +17,11 @@ export const generateDiagnosisCodeSuggestions = createAsyncThunk(
 
 export const generateServiceCodeSuggestions = createAsyncThunk(
   'suggestions/generate/service',
-  async ({ soapNote }: { soapNote: ISOAPNote }, { rejectWithValue }) => {
+  async (soapString: string, { rejectWithValue }) => {
     try {
-      console.log({soapNote});
-      
-      const serviceCodes = await networkService.services.extract(`${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`);
+      console.log({ soapString });
+
+      const serviceCodes = await networkService.services.extract(soapString);
       console.log({ serviceCodes });
       return { serviceCodes };
     } catch (error) {
@@ -32,9 +32,9 @@ export const generateServiceCodeSuggestions = createAsyncThunk(
 
 export const validateServiceCodes = createAsyncThunk(
   'validate/service',
-  async ({ soapNote, inputCodes }: { soapNote: ISOAPNote, inputCodes: string[] }, { rejectWithValue }) => {
+  async ({ soapNote, inputCodes }: { soapNote: string, inputCodes: string[] }, { rejectWithValue }) => {
     try {
-      const serviceCodes = await networkService.services.validate(`${soapNote.subjective} ${soapNote.objective} ${soapNote.assessment} ${soapNote.plan}`, inputCodes);
+      const serviceCodes = await networkService.services.validate(soapNote, inputCodes);
       return { serviceCodes };
     } catch (error) {
       return rejectWithValue('Failed to generate suggestions');
@@ -43,6 +43,7 @@ export const validateServiceCodes = createAsyncThunk(
 );
 
 interface MedicalState {
+  soapString: string;
   currentScreen: TScreen;
   soapNote: ISOAPNote;
   suggestedDiagnosisCodes: IDiagnosisCodeSuggestion[];
@@ -83,7 +84,8 @@ interface MedicalState {
 }
 
 const initialState: MedicalState = {
-  currentScreen: 'code-guessing',
+  soapString: '',
+  currentScreen: 'guess-diagnosis-code',
   soapNote: {
     subjective: "",
     objective: "",
@@ -126,6 +128,9 @@ const medicalSlice = createSlice({
   name: 'medical',
   initialState,
   reducers: {
+    setSoapString: (state, action: PayloadAction<string>) => {
+      state.soapString = action.payload;
+    },
     setScreen: (state, action: PayloadAction<TScreen>) => {
       state.currentScreen = action.payload;
     },
@@ -282,7 +287,8 @@ export const {
   clearManualCodeValidation,
   addManualCode,
   removeManualCode,
-  resetState
+  resetState,
+  setSoapString
 } = medicalSlice.actions;
 
 export default medicalSlice.reducer;

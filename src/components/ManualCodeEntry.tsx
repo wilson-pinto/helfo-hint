@@ -13,7 +13,7 @@ interface ManualCodeEntryProps {
 
 export const ManualCodeEntry = ({ type }: ManualCodeEntryProps) => {
   const dispatch = useAppDispatch();
-  const { ui, isLoading, acceptedCodes, soapNote } = useAppSelector((state) => state.medical);
+  const { ui, isLoading, acceptedCodes, soapString } = useAppSelector((state) => state.medical);
   // Example options, replace with your dynamic values if needed
   const options = [
     { value: '2fev', label: '2fev' },
@@ -31,7 +31,7 @@ export const ManualCodeEntry = ({ type }: ManualCodeEntryProps) => {
   }, [selectedItem]);
 
   const handleValidateServiceCodes = () => {
-    dispatch(validateServiceCodes({ soapNote, inputCodes: selectedItem }));
+    dispatch(validateServiceCodes({ soapNote: soapString, inputCodes: selectedItem }));
   }
 
   return (

@@ -68,8 +68,8 @@ export const SOAPInput = ({ hideGenerateButton = false }: SOAPInputProps) => {
 
   const handleSuggestCodes = (e: React.MouseEvent<HTMLButtonElement>, forceUpdate = false) => {
     e.preventDefault();
-    dispatch(generateDiagnosisCodeSuggestions({ soapNote }));
-    dispatch(generateServiceCodeSuggestions({ soapNote }));
+    // dispatch(generateDiagnosisCodeSuggestions({ soapNote }));
+    // dispatch(generateServiceCodeSuggestions({ soapNote }));
   };
 
   return (

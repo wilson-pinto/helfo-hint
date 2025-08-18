@@ -9,6 +9,7 @@ import { networkService } from '@/services/network';
 import { AlertCircle, CheckCircle, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import Soap from '@/components/Soap';
 
 export const CodeValidation = () => {
   const dispatch = useAppDispatch();
@@ -47,17 +48,17 @@ export const CodeValidation = () => {
     }
   };
 
-  const getValidationStatusColor = (compliance) =>{
-    if(compliance === "pass"){
-         return "border-green-500 text-green-700 bg-green-50"
+  const getValidationStatusColor = (compliance) => {
+    if (compliance === "pass") {
+      return "border-green-500 text-green-700 bg-green-50"
     }
 
-    if(compliance === "fail"){
-         return "border-red-500 text-red-700 bg-red-50"
+    if (compliance === "fail") {
+      return "border-red-500 text-red-700 bg-red-50"
     }
 
-    if(compliance === "warn"){
-         return "border-yellow-500 text-yellow-700 bg-yellow-50"
+    if (compliance === "warn") {
+      return "border-yellow-500 text-yellow-700 bg-yellow-50"
     }
   }
 
@@ -65,7 +66,7 @@ export const CodeValidation = () => {
     if (!code.validationStatus) return null;
 
     return (
-      <Alert 
+      <Alert
         className={cn(
           "mt-2",
           getValidationStatusColor(code.validationStatus.compliance)
@@ -93,55 +94,16 @@ export const CodeValidation = () => {
       exit={{ opacity: 0 }}
       className="space-y-6"
     >
-      <SOAPInput hideGenerateButton />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Diagnosis Codes Panel */}
-        {/* <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>Diagnosis Codes</CardTitle>
-            <Button
-              onClick={handleValidateDiagnosisCodes}
-              disabled={isLoading.validation || acceptedCodes.diagnosis.length === 0}
-              className="bg-medical-primary hover:bg-medical-primary/90"
-              size="sm"
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              {isLoading.validation ? 'Validating...' : 'Validate Diagnoses'}
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <ManualCodeEntry type="diagnosis" />
-            <AnimatePresence mode="popLayout">
-              <div className="mt-4 space-y-4">
-                {acceptedCodes.diagnosis.map((code) => (
-                  <motion.div
-                    key={code.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="p-4 border rounded-lg"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-mono font-medium">{code.code}</p>
-                        <p className="text-sm text-muted-foreground">{code.description}</p>
-                      </div>
-                    </div>
-                    {renderValidationStatus(code)}
-                  </motion.div>
-                ))}
-              </div>
-            </AnimatePresence>
-          </CardContent>
-        </Card> */}
+      <div className="grid grid-cols-1  gap-6">
 
         {/* Service Codes Panel */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>Validate Service Codes</CardTitle>            
+            <CardTitle>Validate Service Codes</CardTitle>
           </CardHeader>
           <CardContent>
+            <Soap buttonText="Generate Suggestions" />
+
             <ManualCodeEntry type="service" />
             <AnimatePresence mode="popLayout">
               <div className="mt-4 space-y-4">

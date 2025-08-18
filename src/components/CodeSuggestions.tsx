@@ -6,10 +6,12 @@ import { Copy, Check, Activity, AlertCircle, Brain, ShieldQuestion } from 'lucid
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { useToast } from '../hooks/use-toast';
-import { useAppDispatch } from '@/hooks/redux';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { IDiagnosisCodeSuggestion, ICodeMatch } from '@/types';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import Soap from './Soap';
+import { generateDiagnosisCodeSuggestions } from '@/store/slices/medicalSlice';
 
 interface CodeSuggestionsProps {
   suggestions: IDiagnosisCodeSuggestion[];
@@ -20,6 +22,8 @@ export const CodeSuggestions = ({ suggestions, error }: CodeSuggestionsProps) =>
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { toast } = useToast();
   const dispatch = useAppDispatch();
+
+  const { isLoading, soapString } = useAppSelector((state) => state.medical);
 
   const handleCopy = (code: string) => {
     if (!code) return;
@@ -44,9 +48,11 @@ export const CodeSuggestions = ({ suggestions, error }: CodeSuggestionsProps) =>
     return 'Low';
   };
 
-  const cardContent = () => {
+  const handleSubmit = () => {
+    dispatch(generateDiagnosisCodeSuggestions(soapString));
+  }
 
-    
+  const cardContent = () => {
 
     if (error) {
       return <Alert variant="destructive">
@@ -62,6 +68,8 @@ export const CodeSuggestions = ({ suggestions, error }: CodeSuggestionsProps) =>
         </p>
       );
     }
+
+
 
     return (
       <div className="space-y-6">
@@ -139,11 +147,12 @@ export const CodeSuggestions = ({ suggestions, error }: CodeSuggestionsProps) =>
         <CardTitle>
           <span className="flex items-center gap-2 text-medical-foreground/80">
             <Brain className="h-4 w-4" />
-            Code Suggestions
+            Diagnosis Code Suggestions
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className='py-4'>
+        <Soap loading={isLoading.diagnosisSuggestions} onButtonClick={handleSubmit} buttonText="Generate Suggestions" />
         {cardContent()}
       </CardContent>
     </Card>
