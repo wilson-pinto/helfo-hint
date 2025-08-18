@@ -1,409 +1,364 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { medicalClasses } from '@/theme/colors';
-// Define the desired stage order (top-level, so it's accessible in render)
-const stageOrder = [
-    'pii_detection',
-    'anonymize_pii',
-    'predict_service_codes',
-    'rerank_service_codes',
-    'validate_soap',
-    'question_generation',
-    'output',
-    'patient_summary_pdf'
-];
+import React, { useEffect, useRef, useState } from "react";
+import { Card, CardHeader, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+// import colors from "../theme/colors"; // Uncomment if you export colors
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const BACKEND_URL = "http://localhost:8000";
 
 const stageConfig = {
-    'pii_detection': { name: 'PII Detection', icon: '🔍', description: 'Scanning for sensitive information' },
-    'anonymize_pii': { name: 'PII Anonymization', icon: '🛡️', description: 'Protecting sensitive data' },
-    'predict_service_codes': { name: 'Code Prediction', icon: '🎯', description: 'AI predicting service codes' },
-    'rerank_service_codes': { name: 'Code Reranking', icon: '📊', description: 'Optimizing code selection' },
-    'validate_soap': { name: 'SOAP Validation', icon: '✅', description: 'Validating against rules' },
-    'question_generation': { name: 'Question Generation', icon: '❓', description: 'Generating clarifying questions' },
-    'output': { name: 'Final Output', icon: '📄', description: 'Preparing final results' },
-    'patient_summary_pdf': { name: 'PDF Summary', icon: '📥', description: 'Downloading patient summary PDF' }
+    pii_detection: { name: "PII Detection", icon: "🔍", description: "Scanning for sensitive data" },
+    anonymize_pii: { name: "Anonymization", icon: "🛡️", description: "Masking sensitive info" },
+    predict_service_codes: { name: "Prediction", icon: "🎯", description: "Predicting codes" },
+    rerank_service_codes: { name: "Rerank", icon: "📊", description: "Selecting best code" },
+    validate_soap: { name: "Validation", icon: "✅", description: "Checking compliance" },
+    check_referral_required: { name: "Check Referral", icon: "🏥", description: "Does referral needed?" },
+    execute_referral: { name: "Referral", icon: "📨", description: "Trigger referral logic" },
+    generate_referral_draft: { name: "Draft Referral", icon: "✉️", description: "Generate referral draft" },
+    question_generation: { name: "Clarifications", icon: "❓", description: "Need more details" },
+    output: { name: "Output", icon: "📄", description: "Finalizing" },
+    patient_summary: { name: "Summary", icon: "🧾", description: "Patient summary" },
+    patient_summary_pdf: { name: "PDF", icon: "📥", description: "Generating PDF" },
+    dummy_end: { name: "End", icon: "🏁", description: "Workflow completed" },
 };
+const stageOrder = Object.keys(stageConfig);
 
-function getSessionId() {
-    let sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) {
-        sessionId = crypto.randomUUID();
-        localStorage.setItem('sessionId', sessionId);
-    }
-    return sessionId;
-}
-
-function getStageBackgroundClass(status) {
-    switch (status) {
-        case 'current': return 'bg-gradient-to-r from-purple-600/30 to-blue-600/30 border border-purple-500/50';
-        case 'completed': return 'bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30';
-        case 'waiting': return 'bg-gradient-to-r from-orange-600/30 to-red-600/30 border border-orange-500/50';
-        case 'skipped': return 'bg-gradient-to-r from-orange-600/20 to-yellow-600/20 border border-orange-500/30';
-        default: return 'bg-slate-800/30 border border-slate-600/30';
-    }
-}
-function getStatusIndicator(status) {
-    switch (status) {
-        case 'current': return <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse" />;
-        case 'completed': return <div className="w-3 h-3 bg-green-500 rounded-full" />;
-        case 'waiting': return <div className="w-3 h-3 bg-orange-500 rounded-full animate-ping" />;
-        default: return <div className="w-3 h-3 bg-gray-500 rounded-full opacity-30" />;
-    }
-}
-
-export default function Agentic() {
-    const [wsStatus, setWsStatus] = useState('Connecting...');
-    const [soapNote, setSoapNote] = useState('');
-    const [inputDisabled, setInputDisabled] = useState(true);
+function Agentic() {
+    // State
+    const [soapText, setSoapText] = useState("");
+    const [sessionId, setSessionId] = useState<string | null>(null);
+    const [ws, setWs] = useState<WebSocket | null>(null);
+    const [allStages, setAllStages] = useState<any[]>([]);
+    const [reasoningTrail, setReasoningTrail] = useState<string[]>([]);
     const [aiThinking, setAiThinking] = useState(false);
-    const [questionForm, setQuestionForm] = useState(false);
-    const [finalDocument, setFinalDocument] = useState(false);
-    const [reasoningTrail, setReasoningTrail] = useState([]);
-    const [questionText, setQuestionText] = useState('');
-    const [questionTerms, setQuestionTerms] = useState([]);
-    const [userResponses, setUserResponses] = useState({});
-    const [serviceCodes, setServiceCodes] = useState([]);
-    const [currentServiceCode, setCurrentServiceCode] = useState(null);
-    const [workflowStages, setWorkflowStages] = useState([]);
-    const [finalReasoningTrail, setFinalReasoningTrail] = useState([]);
-    const [chatMessages, setChatMessages] = useState([]); // {role: 'ai'|'user', text: string, stage?: string}
-    const [questionIdx, setQuestionIdx] = useState(0);
-    const [soapSent, setSoapSent] = useState(false);
-    const [timeline, setTimeline] = useState([]);
-    const wsRef = useRef(null);
-    const sessionId = useRef(getSessionId());
+    const [question, setQuestion] = useState<string | null>(null);
+    const [missingTerms, setMissingTerms] = useState<any[]>([]);
+    const [currentServiceCode, setCurrentServiceCode] = useState<string | null>(null);
+    const [finalPayload, setFinalPayload] = useState<any>(null);
+    const [showQuestionForm, setShowQuestionForm] = useState(false);
+    const [showFinalDocument, setShowFinalDocument] = useState(false);
+    const [activeTab, setActiveTab] = useState<"patient" | "clinical">("patient");
+    const responsesRef = useRef<{ [key: string]: string }>({});
 
-    // Helper to add items to timeline, avoiding duplicates for stages
-    const pushTimeline = item => {
-        setTimeline(prev => {
-            if (item.type === 'stage') {
-                // Only add if not already present (by key)
-                if (prev.some(t => t.key === item.key)) return prev;
-            }
-            return [...prev, item];
-        });
-    };
-
-    // WebSocket connection and event handling
+    // WebSocket setup
     useEffect(() => {
-        setWsStatus('Connecting...');
-        setInputDisabled(true);
-        setWorkflowStages([]);
-        const wsUrl = `${BACKEND_URL.replace(/^http/, 'ws')}/ws/agentic-workflow/${sessionId.current}`;
-        const ws = new window.WebSocket(wsUrl);
-        wsRef.current = ws;
-        ws.onopen = () => {
-            setWsStatus('🤖 AI Connected');
-            setInputDisabled(false);
-        };
-        ws.onclose = () => {
-            setWsStatus('❌ Disconnected');
-            setInputDisabled(true);
-        };
-        ws.onerror = () => {
-            setWsStatus('⚠️ Connection Error');
-            setInputDisabled(true);
-        };
-        ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                const payload = data.payload || {};
-                if (payload.reasoning_trail) setReasoningTrail(payload.reasoning_trail);
-                console.log(data);
+        const id = crypto.randomUUID();
+        setSessionId(id);
+        const socket = new window.WebSocket(`ws://localhost:8000/ws/agentic-workflow/${id}`);
+        setWs(socket);
 
-                if (payload.stages) {
-                    setWorkflowStages(payload.stages);
-                    // Only push executed stages (status 'completed' or 'current')
-                    payload.stages.forEach(stage => {
-                        if (stage.status === 'completed' || stage.status === 'current') {
-                            const config = stageConfig[stage.code];
-                            if (!config) return;
-                            pushTimeline({
-                                type: 'stage',
-                                side: 'left',
-                                key: `stage-${stage.code}`,
-                                icon: config.icon,
-                                name: config.name,
-                                description: config.description
-                            });
-                        }
-                    });
-                }
-                // PDF download event
-                if (data.event_type === 'pdf_ready') {
-                    const { filename, pdf_base64 } = data.payload;
-                    if (filename && pdf_base64) {
-                        const byteCharacters = atob(pdf_base64);
-                        const byteNumbers = new Array(byteCharacters.length);
-                        for (let i = 0; i < byteCharacters.length; i++) {
-                            byteNumbers[i] = byteCharacters.charCodeAt(i);
-                        }
-                        const byteArray = new Uint8Array(byteNumbers);
-                        const blob = new Blob([byteArray], { type: "application/pdf" });
-                        const link = document.createElement("a");
-                        link.href = window.URL.createObjectURL(blob);
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-                    }
-                }
-                switch (data.event_type) {
-                    case 'waiting_for_user': handleWaitingForUser(payload); break;
-                    case 'workflow_finished': handleWorkflowFinished(payload); break;
-                }
-            } catch (e) {
-                // eslint-disable-next-line no-console
-                console.error('Failed to parse WebSocket message:', e);
-            }
+        socket.onopen = () => { };
+        socket.onmessage = (e) => {
+            const m = JSON.parse(e.data), p = m.payload || {};
+            if (p.stages) updateStagesFromState(p.stages);
+            if (p.reasoning_trail) setReasoningTrail(p.reasoning_trail);
+
+            if (m.event_type === "waiting_for_user") handleWaitingForUser(p);
+            if (m.event_type === "workflow_finished") handleWorkflowFinished(p);
         };
-        return () => ws.close();
+
+        return () => {
+            socket.close();
+        };
         // eslint-disable-next-line
-    }, [sessionId.current]);
+    }, []);
 
-    function handleWaitingForUser(payload) {
-        setAiThinking(false);
-        setQuestionForm(true);
-        setCurrentServiceCode(payload.predicted_service_codes?.[0]?.code || null);
-        // Only unanswered terms
-        const terms = (payload.predicted_service_codes?.[0]?.missing_terms || []).filter(t => !t.answered).map(t => t.term);
-        setQuestionTerms(terms);
-        setQuestionIdx(0);
-        setUserResponses({});
-        // Add AI question to chat and timeline
-        setChatMessages(prev => [...prev, { role: 'ai', text: payload.question || 'Please provide additional information.', stage: 'question_generation' }]);
-        pushTimeline({
-            type: 'chat',
-            side: 'left',
-            key: `chat-ai-${Date.now()}`,
-            icon: '🤖',
-            name: stageConfig['question_generation']?.name,
-            text: payload.question || 'Please provide additional information.'
-        });
+    // Stage helpers
+    function initializeWorkflowStages() {
+        setAllStages([]);
     }
 
-    function handleWorkflowFinished(payload) {
-        setAiThinking(false);
-        setQuestionForm(false);
-        setFinalDocument(true);
-        setServiceCodes(payload.predicted_service_codes || []);
-        setFinalReasoningTrail(payload.reasoning_trail || []);
-        // Add analysis complete to timeline
-        pushTimeline({
-            type: 'final',
-            side: 'left',
-            key: `final-${Date.now()}`,
-            icon: '✅',
-            name: 'Analysis Complete!',
-            serviceCodes: payload.predicted_service_codes || []
-        });
-    }
-
-    // Submit SOAP note
-    async function handleSoapSubmit(e) {
-        e.preventDefault();
-        if (!soapNote.trim()) return;
-        setAiThinking(true);
-        setQuestionForm(false);
-        setFinalDocument(false);
-        setReasoningTrail(['AI Agent initializing...']);
-        setWorkflowStages([]);
-        setChatMessages(prev => [...prev, { role: 'user', text: soapNote }]);
-        setSoapNote('');
-        setSoapSent(true);
-        // Add user SOAP note to timeline
-        pushTimeline({
-            type: 'chat',
-            side: 'right',
-            key: `chat-user-soap-${Date.now()}`,
-            icon: '🧑',
-            name: '',
-            text: soapNote
-        });
-        try {
-            await fetch(`${BACKEND_URL}/api/submit_soap`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ soap_text: soapNote, session_id: sessionId.current })
-            });
-        } catch (error) {
-            setReasoningTrail([`Connection Error: ${error.message}`]);
-        }
-    }
-
-    // Respond to agent question (sequential)
-    async function handleSend(e) {
-        e.preventDefault();
-        const term = questionTerms[questionIdx];
-        if (!userResponses[term]?.trim()) return;
-        // Show the question as an AI bubble before the answer
-        setChatMessages(prev => [
-            ...prev,
-            { role: 'ai', text: term, stage: 'question_generation' },
-            { role: 'user', text: userResponses[term] }
-        ]);
-        // Add question and answer to timeline
-        pushTimeline({
-            type: 'chat',
-            side: 'left',
-            key: `chat-ai-term-${Date.now()}`,
-            icon: '🤖',
-            name: stageConfig['question_generation']?.name,
-            text: term
-        });
-        pushTimeline({
-            type: 'chat',
-            side: 'right',
-            key: `chat-user-term-${Date.now()}`,
-            icon: '🧑',
-            name: '',
-            text: userResponses[term]
-        });
-        if (questionIdx < questionTerms.length - 1) {
-            setQuestionIdx(questionIdx + 1);
-        } else {
-            setQuestionForm(false);
-            setAiThinking(true);
-            try {
-                await fetch(`${BACKEND_URL}/api/respond?session_id=${sessionId.current}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ responses: [{ service_code: currentServiceCode, answers: userResponses }] })
-                });
-            } catch (error) {
-                setReasoningTrail([`Connection Error: ${error.message}`]);
+    function updateStagesFromState(stages: any[]) {
+        if (!stages) return;
+        const executed = stages.map((s) => s.code);
+        const last = executed.at(-1);
+        let newStages: any[] = [];
+        stages.forEach((p) => {
+            if (!newStages.some((x) => x.name === p.code)) {
+                newStages.splice(stageOrder.indexOf(p.code), 0, { name: p.code, status: "pending" });
             }
-        }
+        });
+        newStages = newStages.length ? newStages : allStages;
+        newStages.forEach((s) => {
+            s.status = executed.includes(s.name)
+                ? s.name === last
+                    ? "current"
+                    : "completed"
+                : "pending";
+        });
+        setAllStages([...newStages]);
     }
 
-    // Restart session
-    function handleRestart() {
-        setSoapNote('');
+    // Reasoning trail
+    function updateReasoningTrail(trail: string[]) {
+        setReasoningTrail(trail.slice(-10));
+    }
+
+    // WebSocket handlers
+    function handleWaitingForUser(p: any) {
         setAiThinking(false);
-        setQuestionForm(false);
-        setFinalDocument(false);
-        setReasoningTrail([]);
-        setServiceCodes([]);
-        setFinalReasoningTrail([]);
-        setWorkflowStages([]);
-        setChatMessages([]);
-        setQuestionIdx(0);
-        setSoapSent(false);
-        setUserResponses({});
-        setTimeline([]);
-        sessionId.current = crypto.randomUUID();
-        localStorage.setItem('sessionId', sessionId.current);
-        if (wsRef.current) wsRef.current.close();
+        setShowQuestionForm(true);
+        setCurrentServiceCode(p.predicted_service_codes?.[0]?.code || null);
+        setQuestion(p.question || "Please supply information:");
+        setMissingTerms(p.predicted_service_codes?.[0]?.missing_terms || []);
     }
 
-    // --- UI ---
+    function handleWorkflowFinished(p: any) {
+        setAiThinking(false);
+        setShowQuestionForm(false);
+        setShowFinalDocument(true);
+        setFinalPayload(p);
+    }
+
+    // Download handlers
+    function downloadPDF() {
+        window.open(`${BACKEND_URL}/api/download_pdf/${sessionId}`, "_blank");
+    }
+    function downloadReferral() {
+        window.open(`${BACKEND_URL}/api/download_eml/${sessionId}`, "_blank");
+    }
+
+    // Submit SOAP
+    async function handleSubmitSOAP() {
+        if (!soapText.trim()) return;
+        setAiThinking(true);
+        initializeWorkflowStages();
+        setShowQuestionForm(false);
+        setShowFinalDocument(false);
+        await fetch(`${BACKEND_URL}/api/submit_soap`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ soap_text: soapText.trim(), session_id: sessionId }),
+        });
+    }
+
+    // Respond to question
+    async function handleRespond() {
+        const answers: { [key: string]: string } = {};
+        for (const mt of missingTerms) {
+            const val = responsesRef.current[mt.term] || "";
+            if (!val.trim()) return alert("Please fill all");
+            answers[mt.term] = val.trim();
+        }
+        setShowQuestionForm(false);
+        setAiThinking(true);
+        await fetch(`${BACKEND_URL}/api/respond?session_id=${sessionId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ responses: [{ service_code: currentServiceCode, answers }] }),
+        });
+    }
+
+    // Restart workflow
+    function handleRestart() {
+        window.location.reload();
+    }
+
+    // Tab switch
+    function switchTab(tab: "patient" | "clinical") {
+        setActiveTab(tab);
+    }
+
+    // Render
     return (
-    <div className="bg-medical-surface text-medical-foreground antialiased min-h-screen font-inter">
+        <div className="bg-background text-foreground antialiased min-h-screen">
             <div className="container mx-auto p-6">
+                <p className="text-2xl font-semibold leading-none tracking-tight px-10">Agentic AI</p>
                 <div className="flex gap-8">
-                    {/* LEFT PANEL */}
+                    {/* LEFT */}
                     <div className="flex-1 space-y-6">
-                        {/* SOAP Input */}
-                        {!soapSent && !aiThinking && !questionForm && !finalDocument && (
-                            <div className={medicalClasses.card + ' p-6 rounded-xl'}>
-                                <h2 className="font-semibold mb-2">📝 Enter SOAP Note</h2>
-                                <textarea
-                                    rows={6}
-                                    className={medicalClasses.input + ' w-full p-3 rounded text-sm'}
-                                    placeholder="Enter SOAP note here..."
-                                    value={soapNote}
-                                    onChange={e => setSoapNote(e.target.value)}
-                                    disabled={inputDisabled}
-                                />
-                                <button
-                                    onClick={handleSoapSubmit}
-                                    disabled={inputDisabled || !soapNote.trim()}
-                                    className={medicalClasses.button.primary + ' w-full mt-3 p-3 rounded'}
-                                >Analyse</button>
-                            </div>
+                        {/* Input Form */}
+                        {!aiThinking && !showQuestionForm && !showFinalDocument && (
+                            <Card className="bg-card">
+                                <CardHeader>
+                                    <h2 className="font-semibold mb-2 text-gray-900">📝 Enter SOAP Note</h2>
+                                </CardHeader>
+                                <CardContent>
+                                    <Textarea
+                                        rows={6}
+                                        className="text-gray-900"
+                                        placeholder="Enter SOAP note here..."
+                                        value={soapText}
+                                        onChange={(e) => setSoapText(e.target.value)}
+                                    />
+                                    <Button
+                                        className="w-full mt-3"
+                                        onClick={handleSubmitSOAP}
+                                        disabled={!ws || !soapText.trim()}
+                                    >
+                                        Analyse
+                                    </Button>
+                                </CardContent>
+                            </Card>
                         )}
+
                         {/* AI Thinking */}
                         {aiThinking && (
-                            <div className={medicalClasses.card + ' p-6 rounded-xl'}>
-                                <p>🤖 Processing...</p>
-                                <pre className="text-xs whitespace-pre-wrap">{reasoningTrail.slice(-10).join('\n')}</pre>
-                            </div>
+                            <Card className="bg-card p-6">
+                                <CardContent>
+                                    <p className="text-gray-900">🤖 Processing...</p>
+                                    <pre className="text-xs whitespace-pre-wrap text-gray-900">{reasoningTrail.join("\n")}</pre>
+                                </CardContent>
+                            </Card>
                         )}
+
                         {/* Question Form */}
-                        {questionForm && (
-                            <div className={medicalClasses.card + ' p-6 rounded-xl space-y-2'}>
-                                <p className="font-medium">{questionText}</p>
-                                <form onSubmit={handleSend} id="responses-form">
-                                    {questionTerms.map((term, idx) => (
-                                        <div key={term} className="mb-2">
-                                            <label className="block mt-2">{term}</label>
-                                            <textarea
-                                                className={medicalClasses.input + ' w-full p-2 rounded'}
-                                                value={userResponses[term] || ''}
-                                                onChange={e => setUserResponses(r => ({ ...r, [term]: e.target.value }))}
-                                            />
-                                        </div>
-                                    ))}
-                                    <button
-                                        type="submit"
-                                        className={medicalClasses.button.secondary + ' w-full p-2 rounded mt-2'}
-                                    >Submit</button>
-                                </form>
-                            </div>
+                        {showQuestionForm && (
+                            <Card className="bg-card p-6">
+                                <CardContent>
+                                    <p className="font-medium text-gray-900 mb-2">{question}</p>
+                                    <form
+                                        onSubmit={(e) => {
+                                            e.preventDefault();
+                                            handleRespond();
+                                        }}
+                                        id="responses-form"
+                                    >
+                                        {missingTerms.map((mt) => {
+                                            const id = mt.term.toLowerCase().replace(/\s/g, "-");
+                                            return (
+                                                <div key={id} className="mb-2">
+                                                    <Label htmlFor={id} className="block text-sm text-gray-900 mb-1">
+                                                        {mt.term}
+                                                    </Label>
+                                                    <Textarea
+                                                        id={id}
+                                                        name={mt.term}
+                                                        className="text-gray-900"
+                                                        onChange={(e) => {
+                                                            responsesRef.current[mt.term] = e.target.value;
+                                                        }}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                        <Button
+                                            type="submit"
+                                            className="w-full mt-3"
+                                        >
+                                            Submit
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
                         )}
+
                         {/* Final Document */}
-                        {finalDocument && (
-                            <div className={medicalClasses.card + ' p-6 rounded-xl'}>
-                                <h3 className="font-bold text-lg mb-2">✅ Complete</h3>
-                                <div>
-                                    {serviceCodes.map((c, idx) => (
-                                        <div key={idx} className={medicalClasses.card + ' p-4 rounded mb-2'}>
-                                            <div className="flex justify-between">
-                                                <strong>{c.code}</strong>
-                                                <span>{c.severity === 'pass' ? '✅' : '❌'}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <pre className="text-xs whitespace-pre-wrap mt-4">{finalReasoningTrail.join('\n')}</pre>
-                                <button
-                                    onClick={handleRestart}
-                                    className={medicalClasses.button.primary + ' mt-4 p-2 rounded'}
-                                >Start New</button>
-                            </div>
+                        {showFinalDocument && finalPayload && (
+                            <Card className="bg-card p-6">
+                                <CardContent>
+                                    <Tabs value={activeTab} onValueChange={switchTab} className="mb-4">
+                                        <TabsList>
+                                            <TabsTrigger value="patient">Patient Summary</TabsTrigger>
+                                            <TabsTrigger value="clinical">Clinical Details</TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="patient">
+                                            <p className="mb-4 whitespace-pre-line text-gray-900">
+                                                {finalPayload.patient_summary || "No summary available."}
+                                            </p>
+                                            <Button
+                                                variant="outline"
+                                                className="mr-2"
+                                                onClick={downloadPDF}
+                                            >
+                                                📄 Download PDF
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                onClick={downloadReferral}
+                                            >
+                                                ✉️ Download Referral Draft
+                                            </Button>
+                                        </TabsContent>
+                                        <TabsContent value="clinical">
+                                            {(finalPayload.predicted_service_codes || []).map((c: any) => (
+                                                <Card key={c.code} className="p-3 mb-3 bg-subtle">
+                                                    <CardContent>
+                                                        <div className="font-semibold text-gray-900">
+                                                            {c.code} ({c.severity})
+                                                        </div>
+                                                        <div className="text-xs text-gray-900">
+                                                            {(c.suggestions || []).join(" ")}
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                            <pre className="text-[11px] mt-4 text-gray-900">
+                                                {(finalPayload.reasoning_trail || []).join("\n")}
+                                            </pre>
+                                        </TabsContent>
+                                    </Tabs>
+                                    <Button
+                                        variant="default"
+                                        className="mt-4"
+                                        onClick={handleRestart}
+                                    >
+                                        Start New
+                                    </Button>
+                                </CardContent>
+                            </Card>
                         )}
                     </div>
-                    {/* RIGHT PANEL: Timeline */}
-                    <div className="w-[320px] max-h-[calc(100vh-4rem)] overflow-y-auto">
-                        <div className={medicalClasses.card + ' p-4 rounded-xl space-y-3'}>
-                            <h3 className="font-semibold mb-2">📊 Workflow Timeline</h3>
-                            <div className="space-y-4 text-xs">
-                                {workflowStages.length === 0 ? (
-                                    <div className="text-slate-500 text-center py-6">Waiting...</div>
-                                ) : (
-                                    workflowStages.map((s, idx) => {
-                                        const cfg = stageConfig[s.code];
-                                        return (
-                                            <React.Fragment key={s.code}>
-                                                <div className={`stage-node flex space-x-2 p-2 rounded ${s.status === 'completed' ? 'bg-green-600/20' : s.status === 'current' ? 'bg-purple-600/20' : 'bg-slate-700/20'}`}>
-                                                    <span>{cfg?.icon}</span>
-                                                    <div className="flex-1 text-xs">{cfg?.name}</div>
-                                                    <span>{s.status === 'current' ? '⏳' : s.status === 'completed' ? '✅' : ''}</span>
-                                                </div>
-                                                {idx < workflowStages.length - 1 && (
-                                                    <div className={`h-[3px] rounded-full my-1 ${workflowStages[idx + 1].status !== 'pending' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-slate-700/40'}`}></div>
-                                                )}
-                                            </React.Fragment>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        </div>
+
+                    {/* RIGHT: Workflow Timeline */}
+                    <div className="">
+                        <Card className="bg-card p-4 space-y-3 border-s">
+                            <CardHeader>
+                                <h3 className="font-semibold mb-2 text-gray-900">📊 Workflow Timeline</h3>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4 text-xs">
+                                    {!allStages.length ? (
+                                        <div className="py-6 text-center text-gray-900">Waiting...</div>
+                                    ) : (
+                                        allStages.map((s, i) => {
+                                            const c = stageConfig[s.name];
+                                            return (
+                                                <React.Fragment key={s.name}>
+                                                    <Card className={`p-3 flex space-x-3 rounded ${s.status === "current"
+                                                        ? "bg-accent/20"
+                                                        : s.status === "completed"
+                                                            ? "bg-success/20"
+                                                            : "bg-subtle/20"
+                                                        }`}>
+                                                        <CardContent className="flex items-center space-x-3 p-0">
+                                                            <span>{c.icon}</span>
+                                                            <div className="flex-1">
+                                                                <div className="text-sm font-bold text-gray-900">{c.name}</div>
+                                                                <div className="text-[11px] text-gray-900">{c.description}</div>
+                                                            </div>
+                                                            <div className="text-gray-900">
+                                                                {s.status === "current"
+                                                                    ? "⏳"
+                                                                    : s.status === "completed"
+                                                                        ? "✅"
+                                                                        : ""}
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                    {i < allStages.length - 1 && (
+                                                        <div
+                                                            className={`h-2 rounded-full my-1 ${allStages[i + 1].status !== "pending"
+                                                                ? "bg-accent"
+                                                                : "bg-muted/40"
+                                                                }`}
+                                                        ></div>
+                                                    )}
+                                                </React.Fragment>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             </div>
         </div>
     );
 }
+
+export default Agentic;

@@ -45,6 +45,9 @@ export const CodeSuggestions = ({ suggestions, error }: CodeSuggestionsProps) =>
   };
 
   const cardContent = () => {
+
+    
+
     if (error) {
       return <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
