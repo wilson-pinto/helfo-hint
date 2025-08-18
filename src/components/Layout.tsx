@@ -32,7 +32,7 @@ export const Layout = ({ children }: LayoutProps) => {
               value={currentScreen}
               onValueChange={(value) => handleScreenChange(value as TScreen)}
             >
-              <TabsList className="grid grid-cols-2 w-full">
+              <TabsList className="grid grid-cols-3 w-full">
                 <TabsTrigger
                   value="code-guessing"
                   className="flex items-center gap-2"
@@ -47,13 +47,13 @@ export const Layout = ({ children }: LayoutProps) => {
                   <ClipboardCheck className="h-4 w-4" />
                   Code Validation
                 </TabsTrigger>
-                {/* <TabsTrigger
+                <TabsTrigger
                   value="agentic"
                   className="flex items-center gap-2"
                 >
                   <ClipboardCheck className="h-4 w-4" />
                   Agentic AI
-                </TabsTrigger> */}
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>

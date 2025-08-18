@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { medicalClasses } from '@/theme/colors';
 // Define the desired stage order (top-level, so it's accessible in render)
 const stageOrder = [
     'pii_detection',
@@ -299,198 +300,110 @@ export default function Agentic() {
 
     // --- UI ---
     return (
-        <div className=" bg-gray-50 font-inter flex flex-col">
-            <div className="flex w-full" style={{ height: '70vh' }}>
-                {/* Left: Chat Timeline (scrollable, 70%) */}
-                <div className="flex w-full flex-col h-full bg-transparent" style={{ maxWidth: '70vw', minWidth: '0' }}>
-                    <div className="h-full overflow-y-auto p-8 w-full">
-                        {/* Render timeline from state */}
-                        {timeline.map(item => {
-                            if (item.type === 'chat') {
-                                return (
-                                    <div key={item.key} className={`flex ${item.side === 'right' ? 'justify-end' : 'justify-start'} mb-6`}>
-                                        <div className={`max-w-lg flex ${item.side === 'right' ? 'items-end' : 'items-start'}  flex-col`}>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className={`w-8 h-8 ${item.side === 'right' ? 'bg-gray-300' : 'bg-primary'} rounded-full flex items-center justify-center text-white font-bold`}>{item.icon}</span>
-                                                {item.name && <span className="text-xs text-primary font-semibold">{item.name}</span>}
-                                            </div>
-                                            <div className={`rounded-lg px-4 py-2 text-sm shadow ${item.side === 'right' ? 'bg-primary text-white text-right w-fit' : 'bg-gray-100 text-gray-800'}`}>{item.text}</div>
-                                        </div>
-                                    </div>
-                                );
-                            }
-                            if (item.type === 'stage') {
-                                return (
-                                    <div key={item.key} className="flex justify-start mb-2">
-                                        <div className="bg-white rounded-lg px-4 py-2 text-gray-700 shadow max-w-lg">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="w-6 h-6 rounded-full flex items-center justify-center text-lg bg-primary text-white">{item.icon}</span>
-                                                <span className="font-semibold">{item.name}</span>
-                                            </div>
-                                            <span className="text-gray-500 text-xs">{item.description}</span>
-                                        </div>
-                                    </div>
-                                );
-                            }
-                            if (item.type === 'thinking') {
-                                return (
-                                    <div key={item.key} className="flex justify-start mb-2">
-                                        <div className="max-w-lg">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold animate-spin">{item.icon}</span>
-                                                <span className="text-xs text-primary font-semibold">{item.name}</span>
-                                            </div>
-                                            <div className="bg-gray-100 rounded-lg px-4 py-2 text-gray-800 text-sm shadow">{item.text}</div>
-                                        </div>
-                                    </div>
-                                );
-                            }
-                            if (item.type === 'question') {
-                                return (
-                                    <div key={item.key} className="flex justify-start mb-2">
-                                        <div className="max-w-lg">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center text-white font-bold">{item.icon}</span>
-                                                <span className="text-xs text-orange-500 font-semibold">{item.name}</span>
-                                            </div>
-                                            <div className="bg-gray-100 rounded-lg px-4 py-2 text-gray-800 text-sm shadow">{item.text}</div>
-                                        </div>
-                                    </div>
-                                );
-                            }
-                            if (item.type === 'final') {
-                                return (
-                                    <div key={item.key} className="flex justify-start mb-2">
-                                        <div className="max-w-lg">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">{item.icon}</span>
-                                                <span className="text-xs text-green-600 font-semibold">{item.name}</span>
-                                            </div>
-                                            <div className="bg-gray-100 rounded-lg px-4 py-2 text-gray-800 text-sm shadow">
-                                                <div className="mb-6">
-                                                    {item.serviceCodes.map((code, idx) => {
-                                                        const severityColor = code.severity === 'fail' ? 'bg-red-500' : 'bg-green-500';
-                                                        const severityLabel = code.severity === 'fail' ? '❌ Validation Failed' : '✅ Validation Passed';
-                                                        const missingTerms = (code.missing_terms || []).map(term => (
-                                                            <div key={term.term} className="flex justify-between items-center py-1"><span>{term.term}</span><span className={term.answered ? 'text-green-500' : 'text-red-500'}>{term.answered ? '✓' : '✗'}</span></div>
-                                                        ));
-                                                        const suggestions = (code.suggestions || []).map((s, i) => (
-                                                            <li key={i} className="text-gray-600">{s}</li>
-                                                        ));
-                                                        return (
-                                                            <div key={idx} className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
-                                                                <div className="flex items-center justify-between mb-3">
-                                                                    <h3 className="text-xl font-bold text-gray-800">Service Code: {code.code}</h3>
-                                                                    <span className={`px-3 py-1 rounded-full text-sm font-semibold text-white ${severityColor}`}>{severityLabel}</span>
-                                                                </div>
-                                                                {missingTerms.length > 0 && (
-                                                                    <div className="mb-3">
-                                                                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Missing Terms:</h4>
-                                                                        <div className="bg-white rounded-lg p-3 space-y-1 border border-gray-200">{missingTerms}</div>
-                                                                    </div>
-                                                                )}
-                                                                {suggestions.length > 0 && (
-                                                                    <div>
-                                                                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Suggestions:</h4>
-                                                                        <ul className="list-disc list-inside text-sm space-y-1">{suggestions}</ul>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                                <button
-                                                    className="w-full mt-4 py-3 px-6 rounded-lg font-semibold transition duration-300 bg-gray-600 text-white shadow hover:bg-gray-700"
-                                                    onClick={handleRestart}
-                                                >🔄 Start New Analysis</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            }
-                            return null;
-                        })}
-                        {aiThinking && (
-                            <div className={`flex justify-start mb-6`}>
-                                <div className={`max-w-lg flex items-start  flex-col`}>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className={`w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold`}>🤖</span>
-                                        <span className="text-xs text-primary font-semibold">Processing....</span>
-                                    </div>
-                                    {/* <div className={`rounded-lg px-4 py-2 text-sm shadow ${item.side === 'right' ? 'bg-primary text-white text-right w-fit' : 'bg-gray-100 text-gray-800'}`}>{item.text}</div> */}
-                                </div>
-                            </div>
-                        )
-                        }
-                    </div>
-                    {/* Chat input at bottom: sticky only within left column */}
-                    <div className="sticky bottom-0 w-full bg-white border-t border-gray-200 z-10">
-                        {/* Chat input at bottom: SOAP note only if not sent, question input only if SOAP sent and in questionForm */}
-                        {!finalDocument && !soapSent && (
-                            <form onSubmit={handleSoapSubmit} className="w-full flex items-center gap-2 px-8 py-4">
-                                <div className="flex-1">
-                                    <input
-                                        type="text"
-                                        className="w-full p-3 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-300"
-                                        placeholder="Type your SOAP note..."
-                                        value={soapNote}
-                                        onChange={e => setSoapNote(e.target.value)}
-                                        disabled={inputDisabled}
-                                        autoFocus
-                                    />
-                                </div>
+    <div className="bg-medical-surface text-medical-foreground antialiased min-h-screen font-inter">
+            <div className="container mx-auto p-6">
+                <div className="flex gap-8">
+                    {/* LEFT PANEL */}
+                    <div className="flex-1 space-y-6">
+                        {/* SOAP Input */}
+                        {!soapSent && !aiThinking && !questionForm && !finalDocument && (
+                            <div className={medicalClasses.card + ' p-6 rounded-xl'}>
+                                <h2 className="font-semibold mb-2">📝 Enter SOAP Note</h2>
+                                <textarea
+                                    rows={6}
+                                    className={medicalClasses.input + ' w-full p-3 rounded text-sm'}
+                                    placeholder="Enter SOAP note here..."
+                                    value={soapNote}
+                                    onChange={e => setSoapNote(e.target.value)}
+                                    disabled={inputDisabled}
+                                />
                                 <button
-                                    type="submit"
-                                    className={`py-3 px-6 rounded-lg font-semibold transition duration-300 shadow text-white bg-primary hover:bg-primary-dark`}
+                                    onClick={handleSoapSubmit}
                                     disabled={inputDisabled || !soapNote.trim()}
-                                >Send SOAP</button>
-                            </form>
+                                    className={medicalClasses.button.primary + ' w-full mt-3 p-3 rounded'}
+                                >Analyse</button>
+                            </div>
                         )}
-                        {/* Question input at bottom */}
-                        {!finalDocument && soapSent && questionForm && questionTerms.length > 0 && (
-                            <form onSubmit={handleSend} className="w-full flex items-center gap-2 px-8 py-4">
-                                <div className="flex-1">
-                                    <input
-                                        type="text"
-                                        className="w-full p-3 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition duration-300"
-                                        placeholder={`Enter ${questionTerms[questionIdx].toLowerCase()}...`}
-                                        value={userResponses[questionTerms[questionIdx]] || ''}
-                                        onChange={e => setUserResponses(r => ({ ...r, [questionTerms[questionIdx]]: e.target.value }))}
-                                        autoFocus
-                                    />
+                        {/* AI Thinking */}
+                        {aiThinking && (
+                            <div className={medicalClasses.card + ' p-6 rounded-xl'}>
+                                <p>🤖 Processing...</p>
+                                <pre className="text-xs whitespace-pre-wrap">{reasoningTrail.slice(-10).join('\n')}</pre>
+                            </div>
+                        )}
+                        {/* Question Form */}
+                        {questionForm && (
+                            <div className={medicalClasses.card + ' p-6 rounded-xl space-y-2'}>
+                                <p className="font-medium">{questionText}</p>
+                                <form onSubmit={handleSend} id="responses-form">
+                                    {questionTerms.map((term, idx) => (
+                                        <div key={term} className="mb-2">
+                                            <label className="block mt-2">{term}</label>
+                                            <textarea
+                                                className={medicalClasses.input + ' w-full p-2 rounded'}
+                                                value={userResponses[term] || ''}
+                                                onChange={e => setUserResponses(r => ({ ...r, [term]: e.target.value }))}
+                                            />
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="submit"
+                                        className={medicalClasses.button.secondary + ' w-full p-2 rounded mt-2'}
+                                    >Submit</button>
+                                </form>
+                            </div>
+                        )}
+                        {/* Final Document */}
+                        {finalDocument && (
+                            <div className={medicalClasses.card + ' p-6 rounded-xl'}>
+                                <h3 className="font-bold text-lg mb-2">✅ Complete</h3>
+                                <div>
+                                    {serviceCodes.map((c, idx) => (
+                                        <div key={idx} className={medicalClasses.card + ' p-4 rounded mb-2'}>
+                                            <div className="flex justify-between">
+                                                <strong>{c.code}</strong>
+                                                <span>{c.severity === 'pass' ? '✅' : '❌'}</span>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
+                                <pre className="text-xs whitespace-pre-wrap mt-4">{finalReasoningTrail.join('\n')}</pre>
                                 <button
-                                    type="submit"
-                                    className={`py-3 px-6 rounded-lg font-semibold transition duration-300 shadow text-white bg-orange-400 hover:bg-orange-500`}
-                                    disabled={inputDisabled || !userResponses[questionTerms[questionIdx]]?.trim()}
-                                >Send</button>
-                            </form>
+                                    onClick={handleRestart}
+                                    className={medicalClasses.button.primary + ' mt-4 p-2 rounded'}
+                                >Start New</button>
+                            </div>
                         )}
                     </div>
-                </div>
-                {/* Right: Reasoning Trail Panel (scrollable, 30%) */}
-                <div className="w-[30vw] min-w-[320px] flex flex-col h-full">
-                    <div className="flex-1 overflow-y-auto bg-white p-6 border border-gray-200">
-                        <div className="flex items-center mb-6">
-                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center mr-3">📋</div>
-                            <h3 className="text-xl font-bold text-gray-800">Logs</h3>
-                        </div>
-                        <div className="space-y-3">
-                            <pre className="text-gray-600 text-sm whitespace-pre-wrap">{finalReasoningTrail.join('\n')}</pre>
+                    {/* RIGHT PANEL: Timeline */}
+                    <div className="w-[320px] max-h-[calc(100vh-4rem)] overflow-y-auto">
+                        <div className={medicalClasses.card + ' p-4 rounded-xl space-y-3'}>
+                            <h3 className="font-semibold mb-2">📊 Workflow Timeline</h3>
+                            <div className="space-y-4 text-xs">
+                                {workflowStages.length === 0 ? (
+                                    <div className="text-slate-500 text-center py-6">Waiting...</div>
+                                ) : (
+                                    workflowStages.map((s, idx) => {
+                                        const cfg = stageConfig[s.code];
+                                        return (
+                                            <React.Fragment key={s.code}>
+                                                <div className={`stage-node flex space-x-2 p-2 rounded ${s.status === 'completed' ? 'bg-green-600/20' : s.status === 'current' ? 'bg-purple-600/20' : 'bg-slate-700/20'}`}>
+                                                    <span>{cfg?.icon}</span>
+                                                    <div className="flex-1 text-xs">{cfg?.name}</div>
+                                                    <span>{s.status === 'current' ? '⏳' : s.status === 'completed' ? '✅' : ''}</span>
+                                                </div>
+                                                {idx < workflowStages.length - 1 && (
+                                                    <div className={`h-[3px] rounded-full my-1 ${workflowStages[idx + 1].status !== 'pending' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-slate-700/40'}`}></div>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            {/* Analysis Complete section sticky at bottom, outside scrollable chat */}
-            {finalDocument && (
-                <div className="w-full bg-white border-t border-gray-200 shadow fixed left-0 bottom-0 z-20">
-                    <div className="flex justify-center py-6">
-                        <div className="max-w-2xl w-full">
-                            {/* ...existing analysis complete rendering code... */}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
