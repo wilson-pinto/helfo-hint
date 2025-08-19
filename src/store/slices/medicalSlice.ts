@@ -133,6 +133,7 @@ const medicalSlice = createSlice({
     },
     setScreen: (state, action: PayloadAction<TScreen>) => {
       state.currentScreen = action.payload;
+      state.soapString = ''
     },
     updateSOAPField: (state, action: PayloadAction<{ field: keyof Pick<ISOAPNote, 'subjective' | 'objective' | 'assessment' | 'plan'>; value: string }>) => {
       const { field, value } = action.payload;

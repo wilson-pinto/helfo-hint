@@ -2,12 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Copy, Check, Activity, AlertCircle, Brain, ShieldQuestion } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Copy, Check, AlertCircle, Brain, ShieldQuestion } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { IDiagnosisCodeSuggestion, ICodeMatch } from '@/types';
+import { IDiagnosisCodeSuggestion } from '@/types';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import Soap from './Soap';

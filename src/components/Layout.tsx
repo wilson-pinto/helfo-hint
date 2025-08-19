@@ -59,7 +59,7 @@ export const Layout = ({ children }: LayoutProps) => {
                   className="flex items-center gap-2"
                 >
                   <ClipboardCheck className="h-4 w-4" />
-                  Agentic AI
+                  AI
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -84,7 +84,7 @@ export const Layout = ({ children }: LayoutProps) => {
       </main>
 
       <footer className="border-t border-border/50 py-4 mt-8 bg-black/85">
-       <Footer />
+        <Footer />
       </footer>
     </div>
   );
