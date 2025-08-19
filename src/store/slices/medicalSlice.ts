@@ -231,6 +231,7 @@ const medicalSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(generateDiagnosisCodeSuggestions.pending, (state) => {
       state.isLoading.diagnosisSuggestions = true;
+      state.suggestedDiagnosisCodes = [];
       state.errors = {};
     });
     builder.addCase(generateDiagnosisCodeSuggestions.fulfilled, (state, action) => {
@@ -243,6 +244,7 @@ const medicalSlice = createSlice({
     });
     builder.addCase(generateServiceCodeSuggestions.pending, (state) => {
       state.isLoading.serviceSuggestions = true;
+      state.suggestedServiceCodes = [];
       state.errors = {};
     });
     builder.addCase(generateServiceCodeSuggestions.fulfilled, (state, action) => {
