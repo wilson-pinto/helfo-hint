@@ -257,7 +257,7 @@ function Agentic() {
                         {showQuestionForm && (
                             <Card className="bg-card p-6">
                                 <CardContent>
-                                    <p className="font-medium text-gray-900 mb-2">{question}</p>
+                                    <p className="font-medium text-gray-900 mb-4">{question}</p>
                                     <form
                                         onSubmit={(e) => {
                                             e.preventDefault();
@@ -269,7 +269,7 @@ function Agentic() {
                                             const id = mt.term.toLowerCase().replace(/\s/g, "-");
                                             return (
                                                 <div key={id} className="mb-2">
-                                                    <Label htmlFor={id} className="block text-sm text-gray-900 mb-1">
+                                                    <Label htmlFor={id} className="block font-semibold text-sm text-gray-900 mb-1">
                                                         {mt.term}
                                                     </Label>
                                                     <Textarea
