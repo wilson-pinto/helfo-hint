@@ -1,4 +1,3 @@
-
 # Helfo Hint
 
 Helfo Hint is a web application designed to assist with medical diagnosis code and service code. It provides suggestions for service codes and diagnosis codes and allows for manual entry and validation of codes.
@@ -64,3 +63,51 @@ This command bundles the application for production and outputs the static files
 ## Deployment
 
 This project can be deployed using various platforms that support Vite-based applications.
+
+## Technical Documentation
+
+### Architecture
+- **Frontend:** Built with React, TypeScript, Vite, Tailwind CSS, and shadcn/ui components. The UI is modern, responsive, and uses a Redux store for state management.
+- **Backend:** The backend is expected to run locally (not hosted in the demo). It exposes REST and WebSocket endpoints for AI-powered code suggestions, validation, and workflow management.
+
+### Main Flows
+1. **SOAP Note Entry:**
+   - Users enter a SOAP note (Subjective, Objective, Assessment, Plan) via a textarea.
+   - The note is stored in Redux 
+
+2. **AI Workflow:**
+   - On submission, the frontend sends the SOAP note to the backend via REST API and opens a WebSocket for real-time workflow updates.
+   - The backend processes the note through several stages (PII detection, anonymization, code prediction, reranking, validation, referral checks, etc.).
+   - The frontend displays a timeline of workflow stages and reasoning trail, updating in real time as the backend progresses.
+
+3. **Code Suggestions & Validation:**
+   - The backend returns suggested diagnosis and service codes.
+   - Users can accept, reject, or manually enter codes.
+   - Validation requests are sent to the backend, which checks compliance and compatibility.
+
+4. **Final Output:**
+   - Once the workflow is complete, the frontend displays a summary, clinical details, and allows downloading of PDF or referral draft.
+
+### State Management
+- **Redux Toolkit** is used for global state (SOAP note, code suggestions, accepted codes, loading/errors, UI state).
+- Actions and async thunks handle API calls, state updates, and error handling.
+
+### UI Components
+- **shadcn/ui** provides accessible, themeable UI primitives (Card, Button, Textarea, Tabs, etc.).
+- The timeline and workflow are visually separated for clarity.
+
+### Configuration
+- **Vite** is configured for fast development and hot-reloading.
+- **Port 8080** is used for local development (see `vite.config.ts`).
+- **Path alias (@)** is set for cleaner imports from `src`.
+
+### Extending/Customizing
+- To add new workflow stages, update the `stageConfig` and backend logic.
+- To change UI theme, edit Tailwind and shadcn/ui config.
+- Backend endpoints can be swapped for hosted APIs when available.
+
+### Deployment
+- The frontend can be deployed to Netlify, Vercel, or any static host.
+- The backend must be hosted separately and the frontend configured to point to its URL.
+
+---
