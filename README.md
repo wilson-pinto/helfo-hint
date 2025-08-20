@@ -1,6 +1,11 @@
+
 # Helfo Hint
 
-Helfo Hint is a web application designed to assist with medical coding. It provides suggestions for service codes and allows for manual entry and validation of codes
+Helfo Hint is a web application designed to assist with medical diagnosis code and service code. It provides suggestions for service codes and diagnosis codes and allows for manual entry and validation of codes.
+
+## Demo
+
+Try the live demo here: [https://helfo-hint.netlify.app/](https://helfo-hint.netlify.app/) (Note: backend is pointing to localhost as it is not hosted yet)
 
 ## Technologies Used
 
@@ -18,7 +23,8 @@ To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
 
-You need to have [Bun](https://bun.sh/) installed on your machine.
+- **Node.js** (version 18 or higher recommended)
+- **npm** (comes with Node.js)
 
 ### Installation
 
@@ -32,7 +38,7 @@ You need to have [Bun](https://bun.sh/) installed on your machine.
     ```
 3.  **Install dependencies**
     ```sh
-    bun install
+    npm install
     ```
 
 ### Running the Application
@@ -40,21 +46,21 @@ You need to have [Bun](https://bun.sh/) installed on your machine.
 To start the development server, run the following command:
 
 ```sh
-bun run dev
+npm run dev
 ```
 
-This will start the application in development mode, with hot-reloading enabled. Open [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal) to view it in the browser.
+This will start the application in development mode, with hot-reloading enabled. Open [http://localhost:8080](http://localhost:8080) (or the port shown in your terminal) to view it in the browser.
 
 ## Building for Production
 
 To create a production build, use:
 
 ```sh
-bun run build
+npm run build
 ```
 
 This command bundles the application for production and outputs the static files to the `dist` directory.
 
 ## Deployment
 
-This project can be deployed using various platforms that support Vite-based applications. 
+This project can be deployed using various platforms that support Vite-based applications.
