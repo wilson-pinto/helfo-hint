@@ -38,14 +38,14 @@ export const Layout = ({ children }: LayoutProps) => {
                   className="flex items-center gap-2"
                 >
                   <Brain className="h-4 w-4" />
-                  Guess Diagnosis Code
+                  Predict Diagnosis Code
                 </TabsTrigger>
                 <TabsTrigger
                   value="guess-service-code"
                   className="flex items-center gap-2"
                 >
                   <ClipboardCheck className="h-4 w-4" />
-                  Guess Service Code
+                  Predict Service Code
                 </TabsTrigger>
                 <TabsTrigger
                   value="validate-service-code"

@@ -63,7 +63,7 @@ export const ServiceCodeSuggestions = ({ suggestions, error }: CodeSuggestionsPr
     if (!suggestions || suggestions.length === 0) {
       return (
         <p className="text-center text-muted-foreground">
-          No code suggestions available. Add more details to your SOAP note.
+          No code suggestions available.
         </p>
       );
     }
@@ -128,12 +128,12 @@ export const ServiceCodeSuggestions = ({ suggestions, error }: CodeSuggestionsPr
         <CardTitle>
           <span className="flex items-center gap-2 text-medical-foreground/80">
             <Brain className="h-4 w-4" />
-           Service Code Suggestions
+           Predict Service Code
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className='py-4'>
-        <Soap loading={isLoading.serviceSuggestions} onButtonClick={handleSubmit} buttonText="Generate Suggestions" />
+        <Soap loading={isLoading.serviceSuggestions} onButtonClick={handleSubmit} buttonText="Predict Service Code" />
         {cardContent()}
       </CardContent>
     </Card>

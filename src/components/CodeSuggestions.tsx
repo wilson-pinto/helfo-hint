@@ -64,7 +64,7 @@ export const CodeSuggestions = ({ suggestions, error }: CodeSuggestionsProps) =>
     if (!suggestions || suggestions.length === 0) {
       return (
         <p className="text-center text-muted-foreground">
-          No code suggestions available. Add more details to your SOAP note.
+          No code suggestions available.
         </p>
       );
     }
@@ -147,12 +147,12 @@ export const CodeSuggestions = ({ suggestions, error }: CodeSuggestionsProps) =>
         <CardTitle>
           <span className="flex items-center gap-2 text-medical-foreground/80">
             <Brain className="h-4 w-4" />
-            Diagnosis Code Suggestions
+            Predict Diagnosis Code
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className='py-4'>
-        <Soap loading={isLoading.diagnosisSuggestions} onButtonClick={handleSubmit} buttonText="Generate Suggestions" />
+        <Soap loading={isLoading.diagnosisSuggestions} onButtonClick={handleSubmit} buttonText="Predict Diagnosis Code" />
         {cardContent()}
       </CardContent>
     </Card>
