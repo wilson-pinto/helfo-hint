@@ -232,7 +232,16 @@ function Agentic() {
                         {/* Question Form */}
                         {showQuestionForm && (
                             <div className="bg-card rounded-xl p-6">
-                                <p className="font-medium text-gray-900 mb-4">{question}</p>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="text-3xl">🤖</span>
+                                    <div className="flex-1">
+                                        <div className="font-bold text-lg text-medical-primary mb-1">AI needs your help!</div>
+                                        <div className="text-sm text-gray-700">To continue, the AI needs more information from you. Please answer the following:</div>
+                                    </div>
+                                </div>
+                                <div className="bg-medical-primary/10 border border-medical-primary rounded p-4 mb-4">
+                                    <span className="font-medium text-medical-primary">{question}</span>
+                                </div>
                                 <form
                                     onSubmit={(e) => {
                                         e.preventDefault();
@@ -243,8 +252,8 @@ function Agentic() {
                                     {missingTerms.map((mt) => {
                                         const id = mt.term.toLowerCase().replace(/\s/g, "-");
                                         return (
-                                            <div key={id} className="mb-2">
-                                                <Label htmlFor={id} className="block font-semibold text-sm text-gray-900 mb-1">
+                                            <div key={id} className="mb-4">
+                                                <Label htmlFor={id} className="block uppercase font-semibold text-sm text-gray-900 mb-1">
                                                     {mt.term}
                                                 </Label>
                                                 <Textarea
@@ -259,10 +268,11 @@ function Agentic() {
                                         );
                                     })}
                                     <Button
+                                        variant="default"
                                         type="submit"
                                         className="w-full mt-3"
                                     >
-                                        Submit
+                                        Send Help & Continue
                                     </Button>
                                 </form>
                             </div>
