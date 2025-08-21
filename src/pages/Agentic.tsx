@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Card, CardHeader, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
-// import colors from "../theme/colors"; // Uncomment if you export colors
+import { Download } from 'lucide-react';
 
 const BACKEND_URL = "http://localhost:8000";
 
@@ -164,190 +162,162 @@ function Agentic() {
 
     // Render
     return (
-        <div className="bg-background text-foreground antialiased">
+        <div className="bg-background text-foreground antialiased rounded-lg">
             <div className="container mx-auto px-6">
                 <div className="flex gap-8">
                     {/* Timeline LEFT */}
-                    <div className="w-[320px] max-h-[calc(70vh-4rem)] overflow-y-auto">
-                        <Card className="bg-card p-4 space-y-3 border-e">
-                            <CardHeader>
-                                <h3 className="font-semibold mb-2 text-gray-900">Workflow Timeline</h3>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4 text-xs">
-                                    {allStages.map((s, i) => {
-                                        const c = stageConfig[s.name];
-                                        return (
-                                            <React.Fragment key={s.name}>
-                                                <Card className={`p-3 flex space-x-3 border-b rounded ${s.status === "current"
-                                                    ? "bg-accent/20"
+                    <div className="w-[320px] border-e py-5">
+                        <h3 className="font-semibold mb-2 text-medical-foreground/80 text-2xl leading-none tracking-tight">Workflow Timeline</h3>
+                        <div className="bg-card pe-4 space-y-3 rounded-xl h-[calc(70vh-4rem)] overflow-y-auto">
+                            <div className="space-y-4 text-xs">
+                                {allStages.map((s, i) => {
+                                    const c = stageConfig[s.name];
+                                    return (
+                                        <div key={s.name} className={`p-3 flex space-x-3 border-b rounded ${s.status === "current"
+                                            ? "bg-accent/20"
+                                            : s.status === "completed"
+                                                ? "bg-success/20"
+                                                : "bg-subtle/20"
+                                            }`}>
+                                            <span>{c.icon}</span>
+                                            <div className="flex-1">
+                                                <div className="text-sm font-bold text-gray-900">{c.name}</div>
+                                                <div className="text-[11px] text-gray-900">{c.description}</div>
+                                            </div>
+                                            <div className="text-gray-900">
+                                                {s.status === "current"
+                                                    ? "⏳"
                                                     : s.status === "completed"
-                                                        ? "bg-success/20"
-                                                        : "bg-subtle/20"
-                                                    }`}>
-                                                    <CardContent className="flex items-center space-x-3 p-0">
-                                                        <span>{c.icon}</span>
-                                                        <div className="flex-1">
-                                                            <div className="text-sm font-bold text-gray-900">{c.name}</div>
-                                                            <div className="text-[11px] text-gray-900">{c.description}</div>
-                                                        </div>
-                                                        <div className="text-gray-900">
-                                                            {s.status === "current"
-                                                                ? "⏳"
-                                                                : s.status === "completed"
-                                                                    ? "✅"
-                                                                    : ""}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                                {/* {i < allStages.length - 1 && (
-                                                        <div
-                                                            className={`h-2 rounded-full my-1 ${allStages[i + 1].status !== "pending"
-                                                                ? "bg-accent"
-                                                                : "bg-muted/40"
-                                                                }`}
-                                                        ></div>
-                                                    )} */}
-                                            </React.Fragment>
-                                        );
-                                    })}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                                        ? "✅"
+                                                        : ""}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Workflow RIGHT */}
                     <div className="flex-1 space-y-6">
                         {/* Input Form */}
                         {!aiThinking && !showQuestionForm && !showFinalDocument && (
-                            <Card className="bg-card">
-                                <CardHeader>
-                                    <h2 className="font-semibold mb-2 text-gray-900">📝 Enter SOAP Note</h2>
-                                </CardHeader>
-                                <CardContent>
-                                    <Textarea
-                                        rows={6}
-                                        className="text-gray-900"
-                                        placeholder="Enter SOAP note here..."
-                                        value={soapText}
-                                        onChange={(e) => setSoapText(e.target.value)}
-                                    />
-                                    <Button
-                                        className="w-full mt-3"
-                                        onClick={handleSubmitSOAP}
-                                        disabled={!ws || !soapText.trim()}
-                                    >
-                                        Analyse
-                                    </Button>
-                                </CardContent>
-                            </Card>
+                            <div className="bg-card rounded-xl p-6">
+                                <h2 className="font-semibold mb-3 text-medical-foreground/80 text-2xl leading-none tracking-tight">Enter SOAP Note</h2>
+                                <Textarea
+                                    rows={6}
+                                    className="text-gray-900"
+                                    placeholder="Enter SOAP note here..."
+                                    value={soapText}
+                                    onChange={(e) => setSoapText(e.target.value)}
+                                />
+                                <Button
+                                    className="w-full mt-3"
+                                    onClick={handleSubmitSOAP}
+                                    disabled={!ws || !soapText.trim()}
+                                >
+                                    Analyse
+                                </Button>
+                            </div>
                         )}
 
                         {/* AI Thinking */}
                         {aiThinking && (
-                            <Card className="bg-card p-6">
-                                <CardContent>
-                                    <p className="text-gray-900">🤖 Processing...</p>
-                                    <pre className="text-xs whitespace-pre-wrap text-gray-900">{reasoningTrail.join("\n")}</pre>
-                                </CardContent>
-                            </Card>
+                            <div className="bg-card rounded-xl p-6">
+                                <p className="text-gray-900">🤖 Processing...</p>
+                                <pre className="text-xs whitespace-pre-wrap text-gray-900">{reasoningTrail.join("\n")}</pre>
+                            </div>
                         )}
 
                         {/* Question Form */}
                         {showQuestionForm && (
-                            <Card className="bg-card p-6">
-                                <CardContent>
-                                    <p className="font-medium text-gray-900 mb-4">{question}</p>
-                                    <form
-                                        onSubmit={(e) => {
-                                            e.preventDefault();
-                                            handleRespond();
-                                        }}
-                                        id="responses-form"
+                            <div className="bg-card rounded-xl p-6">
+                                <p className="font-medium text-gray-900 mb-4">{question}</p>
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        handleRespond();
+                                    }}
+                                    id="responses-form"
+                                >
+                                    {missingTerms.map((mt) => {
+                                        const id = mt.term.toLowerCase().replace(/\s/g, "-");
+                                        return (
+                                            <div key={id} className="mb-2">
+                                                <Label htmlFor={id} className="block font-semibold text-sm text-gray-900 mb-1">
+                                                    {mt.term}
+                                                </Label>
+                                                <Textarea
+                                                    id={id}
+                                                    name={mt.term}
+                                                    className="text-gray-900"
+                                                    onChange={(e) => {
+                                                        responsesRef.current[mt.term] = e.target.value;
+                                                    }}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                    <Button
+                                        type="submit"
+                                        className="w-full mt-3"
                                     >
-                                        {missingTerms.map((mt) => {
-                                            const id = mt.term.toLowerCase().replace(/\s/g, "-");
-                                            return (
-                                                <div key={id} className="mb-2">
-                                                    <Label htmlFor={id} className="block font-semibold text-sm text-gray-900 mb-1">
-                                                        {mt.term}
-                                                    </Label>
-                                                    <Textarea
-                                                        id={id}
-                                                        name={mt.term}
-                                                        className="text-gray-900"
-                                                        onChange={(e) => {
-                                                            responsesRef.current[mt.term] = e.target.value;
-                                                        }}
-                                                    />
-                                                </div>
-                                            );
-                                        })}
-                                        <Button
-                                            type="submit"
-                                            className="w-full mt-3"
-                                        >
-                                            Submit
-                                        </Button>
-                                    </form>
-                                </CardContent>
-                            </Card>
+                                        Submit
+                                    </Button>
+                                </form>
+                            </div>
                         )}
 
                         {/* Final Document */}
                         {showFinalDocument && finalPayload && (
-                            <Card className="bg-card p-6">
-                                <CardContent>
-                                    <Tabs value={activeTab} onValueChange={switchTab} className="mb-4">
-                                        <TabsList>
-                                            <TabsTrigger value="patient">Patient Summary</TabsTrigger>
-                                            <TabsTrigger value="clinical">Clinical Details</TabsTrigger>
-                                        </TabsList>
-                                        <TabsContent value="patient">
-                                            <p className="mb-4 whitespace-pre-line text-gray-900">
-                                                {finalPayload.patient_summary || "No summary available."}
-                                            </p>
-                                            <Button
-                                                variant="outline"
-                                                className="mr-2"
-                                                onClick={downloadPDF}
-                                            >
-                                                📄 Download PDF
-                                            </Button>
-                                            <Button
-                                                variant="outline"
-                                                onClick={downloadReferral}
-                                            >
-                                                ✉️ Download Referral Draft
-                                            </Button>
-                                        </TabsContent>
-                                        <TabsContent value="clinical">
-                                            {(finalPayload.predicted_service_codes || []).map((c: any) => (
-                                                <Card key={c.code} className="p-3 mb-3 bg-subtle">
-                                                    <CardContent>
-                                                        <div className="font-semibold text-gray-900">
-                                                            {c.code} ({c.severity})
-                                                        </div>
-                                                        <div className="text-xs text-gray-900">
-                                                            {(c.suggestions || []).join(" ")}
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
-                                            <pre className="text-[11px] mt-4 text-gray-900">
-                                                {(finalPayload.reasoning_trail || []).join("\n")}
-                                            </pre>
-                                        </TabsContent>
-                                    </Tabs>
-                                    <Button
-                                        variant="default"
-                                        className="mt-4"
-                                        onClick={handleRestart}
-                                    >
-                                        Start New
-                                    </Button>
-                                </CardContent>
-                            </Card>
+                            <div className="bg-card rounded-xl p-6">
+                                <Tabs value={activeTab} onValueChange={switchTab} className="mb-4">
+                                    <TabsList>
+                                        <TabsTrigger value="patient">Patient Summary</TabsTrigger>
+                                        <TabsTrigger value="clinical">Clinical Details</TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="patient">
+                                        <p className="mb-4 whitespace-pre-line text-gray-900">
+                                            {finalPayload.patient_summary || "No summary available."}
+                                        </p>
+                                        <Button
+                                            variant="outline"
+                                            className="mr-2"
+                                            onClick={downloadPDF}
+                                        >
+                                            <Download /> Download PDF
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={downloadReferral}
+                                        >
+                                            Download Referral Draft
+                                        </Button>
+                                    </TabsContent>
+                                    <TabsContent value="clinical">
+                                        {(finalPayload.predicted_service_codes || []).map((c: any) => (
+                                            <div key={c.code} className="p-3 mb-3 bg-subtle rounded">
+                                                <div className="font-semibold text-gray-900">
+                                                    {c.code} ({c.severity})
+                                                </div>
+                                                <div className="text-xs text-gray-900">
+                                                    {(c.suggestions || []).join(" ")}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <pre className="text-[11px] mt-4 text-gray-900">
+                                            {(finalPayload.reasoning_trail || []).join("\n")}
+                                        </pre>
+                                    </TabsContent>
+                                </Tabs>
+                                <Button
+                                    variant="default"
+                                    className="mt-4"
+                                    onClick={handleRestart}
+                                >
+                                    Start New
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </div>

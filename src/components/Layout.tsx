@@ -3,7 +3,7 @@ import { setScreen } from '@/store/slices/medicalSlice';
 import { Card } from './ui/card';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, ClipboardCheck } from 'lucide-react';
+import { Brain, ClipboardCheck, Bot } from 'lucide-react';
 import { TScreen } from '@/types';
 import Logo from './Logo';
 import { Footer } from './Footer';
@@ -44,7 +44,7 @@ export const Layout = ({ children }: LayoutProps) => {
                   value="guess-service-code"
                   className="flex items-center gap-2"
                 >
-                  <ClipboardCheck className="h-4 w-4" />
+                  <Brain className="h-4 w-4" />
                   Predict Service Code
                 </TabsTrigger>
                 <TabsTrigger
@@ -58,7 +58,7 @@ export const Layout = ({ children }: LayoutProps) => {
                   value="agentic"
                   className="flex items-center gap-2"
                 >
-                  <ClipboardCheck className="h-4 w-4" />
+                  <Bot className="h-4 w-4" />
                   AI
                 </TabsTrigger>
               </TabsList>
