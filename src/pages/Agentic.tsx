@@ -233,13 +233,13 @@ function Agentic() {
                         {showQuestionForm && (
                             <div className="bg-card rounded-xl p-6">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <span className="text-3xl">🤖</span>
+                                    <span className="text-xl bg-medical-primary/30 p-4 rounded-full">🤖</span>
                                     <div className="flex-1">
                                         <div className="font-bold text-lg text-medical-primary mb-1">AI needs your help!</div>
                                         <div className="text-sm text-gray-700">To continue, the AI needs more information from you. Please answer the following:</div>
                                     </div>
                                 </div>
-                                <div className="bg-medical-primary/10 border border-medical-primary rounded p-4 mb-4">
+                                <div className="bg-medical-primary/10 border border-medical-primary rounded-lg p-4 mb-4">
                                     <span className="font-medium text-medical-primary">{question}</span>
                                 </div>
                                 <form
@@ -253,8 +253,8 @@ function Agentic() {
                                         const id = mt.term.toLowerCase().replace(/\s/g, "-");
                                         return (
                                             <div key={id} className="mb-4">
-                                                <Label htmlFor={id} className="block uppercase font-semibold text-sm text-gray-900 mb-1">
-                                                    {mt.term}
+                                                <Label htmlFor={id} className="block font-semibold text-sm text-gray-900 mb-1">
+                                                    {mt.term.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())}
                                                 </Label>
                                                 <Textarea
                                                     id={id}

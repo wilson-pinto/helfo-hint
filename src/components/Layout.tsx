@@ -59,7 +59,7 @@ export const Layout = ({ children }: LayoutProps) => {
                   className="flex items-center gap-2"
                 >
                   <Bot className="h-4 w-4" />
-                  AI
+                  Autonomous Workflow
                 </TabsTrigger>
               </TabsList>
             </Tabs>
